@@ -70,19 +70,29 @@
 #define close _close
 #define O_RDONLY _O_RDONLY
 
-typedef short ino_t;
+//typedef short ino_t;
 #endif /* __MINGW32__ */
 
 #ifdef __MINGW32__
 #include <stdint.h>
+#else
+#include "inttypes.h"
 #endif
 
 /* Protos for missing/x.c functions (ideally <missing/addrinfo.h>
  * should be used, but it clashes with <ws2tcpip.h>).
  */
+/*
+ * missing/inet_*.c source files are currently excluded from the
+ * build. Should probably define and check macros like
+ * HAVE_INET_NTOP instead, but this suffices for now -
+ * equivalent SDK version check is done in ws2tcpip.h.
+ */
+#if (NTDDI_VERSION < NTDDI_VISTA)
 extern const char *inet_ntop (int, const void *, char *, size_t);
 extern int inet_pton (int, const char *, void *);
 extern int inet_aton (const char *cp, struct in_addr *addr);
+#endif
 
 #ifndef INET6_ADDRSTRLEN
 #define INET6_ADDRSTRLEN 46
@@ -166,6 +176,12 @@ typedef char* caddr_t;
  * Note: this also requires that padding be put into the structure,
  * at least for compilers where it's implemented as __attribute__((packed)).
  */
+/* 
+ * UNALIGNED is defined in the Windows SDK's winnt.h. #undef'd here to prevent compiler warnings.
+ */
+#ifdef UNALIGNED
+#undef UNALIGNED
+#endif
 #define UNALIGNED	__attribute__((packed))
 
 #if defined(WIN32) || defined(MSDOS)
