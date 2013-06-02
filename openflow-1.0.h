@@ -933,8 +933,14 @@ OFP_ASSERT(sizeof(struct ofp_queue_get_config_request) == 12);
 struct ofp_queue_get_config_reply {
     struct ofp_header header;
     uint16_t port;
-    uint8_t pad[6];
+	uint8_t pad[6];
+#ifdef _MSC_VER
+	uint8_t queues[0];
+#else
+	/* this member generates error C2233 when compiling with VC11
+	 * (arrays of objects containing zero-size arrays are illegal) */
     struct ofp_packet_queue queues[0]; /* List of configured queues. */
+#endif
 };
 OFP_ASSERT(sizeof(struct ofp_queue_get_config_reply) == 16);
 
