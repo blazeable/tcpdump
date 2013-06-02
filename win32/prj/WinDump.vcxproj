@@ -254,6 +254,8 @@
     <ClCompile Include="..\..\print-ntp.c" />
     <ClCompile Include="..\..\print-null.c" />
     <ClCompile Include="..\..\print-olsr.c" />
+    <ClCompile Include="..\..\print-openflow-1.0.c" />
+    <ClCompile Include="..\..\print-openflow.c" />
     <ClCompile Include="..\..\print-ospf.c" />
     <ClCompile Include="..\..\print-ospf6.c" />
     <ClCompile Include="..\..\print-otv.c" />
@@ -361,6 +363,7 @@
     <ClInclude Include="..\..\nlpid.h" />
     <ClInclude Include="..\..\ntp.h" />
     <ClInclude Include="..\..\oakley.h" />
+    <ClInclude Include="..\..\openflow-1.0.h" />
     <ClInclude Include="..\..\ospf.h" />
     <ClInclude Include="..\..\ospf6.h" />
     <ClInclude Include="..\..\oui.h" />
