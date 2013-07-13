@@ -94,6 +94,13 @@ extern int inet_pton (int, const char *, void *);
 extern int inet_aton (const char *cp, struct in_addr *addr);
 #endif
 
+/*
+ * With MSVC, for C, __inline is used to make a function an inline.
+ */
+#ifdef _MSC_VER
+#define inline __inline
+#endif
+
 #ifndef INET6_ADDRSTRLEN
 #define INET6_ADDRSTRLEN 46
 #endif

@@ -40,6 +40,9 @@
 
 #include <tcpdump-stdinc.h>
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "interface.h"
 #include "extract.h"
 #include "addrtoname.h"

@@ -46,8 +46,30 @@
 #include "addrtoname.h"
 #include "ethertype.h"
 #include "ipproto.h"
-#include "openflow-1.0.h"
+#include "openflow.h"
 
+#define OFPT_HELLO                    0x00
+#define OFPT_ERROR                    0x01
+#define OFPT_ECHO_REQUEST             0x02
+#define OFPT_ECHO_REPLY               0x03
+#define OFPT_VENDOR                   0x04
+#define OFPT_FEATURES_REQUEST         0x05
+#define OFPT_FEATURES_REPLY           0x06
+#define OFPT_GET_CONFIG_REQUEST       0x07
+#define OFPT_GET_CONFIG_REPLY         0x08
+#define OFPT_SET_CONFIG               0x09
+#define OFPT_PACKET_IN                0x0a
+#define OFPT_FLOW_REMOVED             0x0b
+#define OFPT_PORT_STATUS              0x0c
+#define OFPT_PACKET_OUT               0x0d
+#define OFPT_FLOW_MOD                 0x0e
+#define OFPT_PORT_MOD                 0x0f
+#define OFPT_STATS_REQUEST            0x10
+#define OFPT_STATS_REPLY              0x11
+#define OFPT_BARRIER_REQUEST          0x12
+#define OFPT_BARRIER_REPLY            0x13
+#define OFPT_QUEUE_GET_CONFIG_REQUEST 0x14
+#define OFPT_QUEUE_GET_CONFIG_REPLY   0x15
 static const struct tok ofpt_str[] = {
 	{ OFPT_HELLO,                    "HELLO"                    },
 	{ OFPT_ERROR,                    "ERROR"                    },
@@ -74,6 +96,13 @@ static const struct tok ofpt_str[] = {
 	{ 0, NULL }
 };
 
+#define OFPPC_PORT_DOWN    (1 << 0)
+#define OFPPC_NO_STP       (1 << 1)
+#define OFPPC_NO_RECV      (1 << 2)
+#define OFPPC_NO_RECV_STP  (1 << 3)
+#define OFPPC_NO_FLOOD     (1 << 4)
+#define OFPPC_NO_FWD       (1 << 5)
+#define OFPPC_NO_PACKET_IN (1 << 6)
 static const struct tok ofppc_bm[] = {
 	{ OFPPC_PORT_DOWN,    "PORT_DOWN"    },
 	{ OFPPC_NO_STP,       "NO_STP"       },
@@ -88,6 +117,12 @@ static const struct tok ofppc_bm[] = {
                    OFPPC_NO_RECV_STP | OFPPC_NO_FLOOD | OFPPC_NO_FWD | \
                    OFPPC_NO_PACKET_IN))
 
+#define OFPPS_LINK_DOWN   (1 << 0)
+#define OFPPS_STP_LISTEN  (0 << 8)
+#define OFPPS_STP_LEARN   (1 << 8)
+#define OFPPS_STP_FORWARD (2 << 8)
+#define OFPPS_STP_BLOCK   (3 << 8)
+#define OFPPS_STP_MASK    (3 << 8)
 static const struct tok ofpps_bm[] = {
 	{ OFPPS_LINK_DOWN,   "LINK_DOWN"   },
 	{ OFPPS_STP_LISTEN,  "STP_LISTEN"  },
@@ -99,6 +134,15 @@ static const struct tok ofpps_bm[] = {
 #define OFPPS_U (~(OFPPS_LINK_DOWN | OFPPS_STP_LISTEN | OFPPS_STP_LEARN | \
                    OFPPS_STP_FORWARD | OFPPS_STP_BLOCK))
 
+#define OFPP_MAX        0xff00
+#define OFPP_IN_PORT    0xfff8
+#define OFPP_TABLE      0xfff9
+#define OFPP_NORMAL     0xfffa
+#define OFPP_FLOOD      0xfffb
+#define OFPP_ALL        0xfffc
+#define OFPP_CONTROLLER 0xfffd
+#define OFPP_LOCAL      0xfffe
+#define OFPP_NONE       0xffff
 static const struct tok ofpp_str[] = {
 	{ OFPP_MAX,        "MAX"        },
 	{ OFPP_IN_PORT,    "IN_PORT"    },
@@ -112,6 +156,18 @@ static const struct tok ofpp_str[] = {
 	{ 0, NULL }
 };
 
+#define OFPPF_10MB_HD    (1 <<  0)
+#define OFPPF_10MB_FD    (1 <<  1)
+#define OFPPF_100MB_HD   (1 <<  2)
+#define OFPPF_100MB_FD   (1 <<  3)
+#define OFPPF_1GB_HD     (1 <<  4)
+#define OFPPF_1GB_FD     (1 <<  5)
+#define OFPPF_10GB_FD    (1 <<  6)
+#define OFPPF_COPPER     (1 <<  7)
+#define OFPPF_FIBER      (1 <<  8)
+#define OFPPF_AUTONEG    (1 <<  9)
+#define OFPPF_PAUSE      (1 << 10)
+#define OFPPF_PAUSE_ASYM (1 << 11)
 static const struct tok ofppf_bm[] = {
 	{ OFPPF_10MB_HD,    "10MB_HD"    },
 	{ OFPPF_10MB_FD,    "10MB_FD"    },
@@ -132,12 +188,31 @@ static const struct tok ofppf_bm[] = {
                    OFPPF_10GB_FD | OFPPF_COPPER | OFPPF_FIBER | \
                    OFPPF_AUTONEG | OFPPF_PAUSE | OFPPF_PAUSE_ASYM))
 
+#define OFPQT_NONE     0x0000
+#define OFPQT_MIN_RATE 0x0001
 static const struct tok ofpqt_str[] = {
 	{ OFPQT_NONE,     "NONE"     },
 	{ OFPQT_MIN_RATE, "MIN_RATE" },
 	{ 0, NULL }
 };
 
+#define OFPFW_IN_PORT      (1 << 0)
+#define OFPFW_DL_VLAN      (1 << 1)
+#define OFPFW_DL_SRC       (1 << 2)
+#define OFPFW_DL_DST       (1 << 3)
+#define OFPFW_DL_TYPE      (1 << 4)
+#define OFPFW_NW_PROTO     (1 << 5)
+#define OFPFW_TP_SRC       (1 << 6)
+#define OFPFW_TP_DST       (1 << 7)
+#define OFPFW_NW_SRC_SHIFT 8
+#define OFPFW_NW_SRC_BITS  6
+#define OFPFW_NW_SRC_MASK  (((1 << OFPFW_NW_SRC_BITS) - 1) << OFPFW_NW_SRC_SHIFT)
+#define OFPFW_NW_DST_SHIFT 14
+#define OFPFW_NW_DST_BITS  6
+#define OFPFW_NW_DST_MASK  (((1 << OFPFW_NW_DST_BITS) - 1) << OFPFW_NW_DST_SHIFT)
+#define OFPFW_DL_VLAN_PCP  (1 << 20)
+#define OFPFW_NW_TOS       (1 << 21)
+#define OFPFW_ALL          ((1 << 22) - 1)
 static const struct tok ofpfw_bm[] = {
 	{ OFPFW_IN_PORT,     "IN_PORT"     },
 	{ OFPFW_DL_VLAN,     "DL_VLAN"     },
@@ -157,6 +232,19 @@ static const struct tok ofpfw_bm[] = {
  * they are not reported as bogus in the decoding. */
 #define OFPFW_U (~(OFPFW_ALL))
 
+#define OFPAT_OUTPUT       0x0000
+#define OFPAT_SET_VLAN_VID 0x0001
+#define OFPAT_SET_VLAN_PCP 0x0002
+#define OFPAT_STRIP_VLAN   0x0003
+#define OFPAT_SET_DL_SRC   0x0004
+#define OFPAT_SET_DL_DST   0x0005
+#define OFPAT_SET_NW_SRC   0x0006
+#define OFPAT_SET_NW_DST   0x0007
+#define OFPAT_SET_NW_TOS   0x0008
+#define OFPAT_SET_TP_SRC   0x0009
+#define OFPAT_SET_TP_DST   0x000a
+#define OFPAT_ENQUEUE      0x000b
+#define OFPAT_VENDOR       0xffff
 static const struct tok ofpat_str[] = {
 	{ OFPAT_OUTPUT,       "OUTPUT"       },
 	{ OFPAT_SET_VLAN_VID, "SET_VLAN_VID" },
@@ -197,6 +285,14 @@ static const struct tok ofpat_bm[] = {
                    1 << OFPAT_SET_NW_TOS | 1 << OFPAT_SET_TP_SRC | \
                    1 << OFPAT_SET_TP_DST | 1 << OFPAT_ENQUEUE))
 
+#define OFPC_FLOW_STATS   (1 << 0)
+#define OFPC_TABLE_STATS  (1 << 1)
+#define OFPC_PORT_STATS   (1 << 2)
+#define OFPC_STP          (1 << 3)
+#define OFPC_RESERVED     (1 << 4)
+#define OFPC_IP_REASM     (1 << 5)
+#define OFPC_QUEUE_STATS  (1 << 6)
+#define OFPC_ARP_MATCH_IP (1 << 7)
 static const struct tok ofp_capabilities_bm[] = {
 	{ OFPC_FLOW_STATS,   "FLOW_STATS"   },
 	{ OFPC_TABLE_STATS,  "TABLE_STATS"  },
@@ -212,6 +308,10 @@ static const struct tok ofp_capabilities_bm[] = {
                     OFPC_STP | OFPC_IP_REASM | OFPC_QUEUE_STATS | \
                     OFPC_ARP_MATCH_IP))
 
+#define OFPC_FRAG_NORMAL 0x0000
+#define OFPC_FRAG_DROP   0x0001
+#define OFPC_FRAG_REASM  0x0002
+#define OFPC_FRAG_MASK   0x0003
 static const struct tok ofp_config_str[] = {
 	{ OFPC_FRAG_NORMAL, "FRAG_NORMAL" },
 	{ OFPC_FRAG_DROP,   "FRAG_DROP"   },
@@ -219,6 +319,11 @@ static const struct tok ofp_config_str[] = {
 	{ 0, NULL }
 };
 
+#define OFPFC_ADD           0x0000
+#define OFPFC_MODIFY        0x0001
+#define OFPFC_MODIFY_STRICT 0x0002
+#define OFPFC_DELETE        0x0003
+#define OFPFC_DELETE_STRICT 0x0004
 static const struct tok ofpfc_str[] = {
 	{ OFPFC_ADD,           "ADD"           },
 	{ OFPFC_MODIFY,        "MODIFY"        },
@@ -233,6 +338,9 @@ static const struct tok bufferid_str[] = {
 	{ 0, NULL }
 };
 
+#define OFPFF_SEND_FLOW_REM (1 << 0)
+#define OFPFF_CHECK_OVERLAP (1 << 1)
+#define OFPFF_EMERG         (1 << 2)
 static const struct tok ofpff_bm[] = {
 	{ OFPFF_SEND_FLOW_REM, "SEND_FLOW_REM" },
 	{ OFPFF_CHECK_OVERLAP, "CHECK_OVERLAP" },
@@ -241,6 +349,13 @@ static const struct tok ofpff_bm[] = {
 };
 #define OFPFF_U (~(OFPFF_SEND_FLOW_REM | OFPFF_CHECK_OVERLAP | OFPFF_EMERG))
 
+#define OFPST_DESC      0x0000
+#define OFPST_FLOW      0x0001
+#define OFPST_AGGREGATE 0x0002
+#define OFPST_TABLE     0x0003
+#define OFPST_PORT      0x0004
+#define OFPST_QUEUE     0x0005
+#define OFPST_VENDOR    0xffff
 static const struct tok ofpst_str[] = {
 	{ OFPST_DESC,      "DESC"      },
 	{ OFPST_FLOW,      "FLOW"      },
@@ -258,23 +373,30 @@ static const struct tok tableid_str[] = {
 	{ 0, NULL }
 };
 
+#define OFPQ_ALL      0xffffffff
 static const struct tok ofpq_str[] = {
 	{ OFPQ_ALL, "ALL" },
 	{ 0, NULL }
 };
 
+#define OFPSF_REPLY_MORE 0x0001
 static const struct tok ofpsf_reply_bm[] = {
 	{ OFPSF_REPLY_MORE, "MORE" },
 	{ 0, NULL }
 };
 #define OFPSF_REPLY_U (~(OFPSF_REPLY_MORE))
 
+#define OFPR_NO_MATCH 0x00
+#define OFPR_ACTION   0x01
 static const struct tok ofpr_str[] = {
 	{ OFPR_NO_MATCH, "NO_MATCH" },
 	{ OFPR_ACTION,   "ACTION"   },
 	{ 0, NULL }
 };
 
+#define OFPRR_IDLE_TIMEOUT 0x00
+#define OFPRR_HARD_TIMEOUT 0x01
+#define OFPRR_DELETE       0x02
 static const struct tok ofprr_str[] = {
 	{ OFPRR_IDLE_TIMEOUT, "IDLE_TIMEOUT" },
 	{ OFPRR_HARD_TIMEOUT, "HARD_TIMEOUT" },
@@ -282,6 +404,9 @@ static const struct tok ofprr_str[] = {
 	{ 0, NULL }
 };
 
+#define OFPPR_ADD    0x00
+#define OFPPR_DELETE 0x01
+#define OFPPR_MODIFY 0x02
 static const struct tok ofppr_str[] = {
 	{ OFPPR_ADD,    "ADD"    },
 	{ OFPPR_DELETE, "DELETE" },
@@ -289,6 +414,12 @@ static const struct tok ofppr_str[] = {
 	{ 0, NULL }
 };
 
+#define OFPET_HELLO_FAILED    0x0000
+#define OFPET_BAD_REQUEST     0x0001
+#define OFPET_BAD_ACTION      0x0002
+#define OFPET_FLOW_MOD_FAILED 0x0003
+#define OFPET_PORT_MOD_FAILED 0x0004
+#define OFPET_QUEUE_OP_FAILED 0x0005
 static const struct tok ofpet_str[] = {
 	{ OFPET_HELLO_FAILED,    "HELLO_FAILED"    },
 	{ OFPET_BAD_REQUEST,     "BAD_REQUEST"     },
@@ -299,12 +430,23 @@ static const struct tok ofpet_str[] = {
 	{ 0, NULL }
 };
 
+#define OFPHFC_INCOMPATIBLE 0x0000
+#define OFPHFC_EPERM        0x0001
 static const struct tok ofphfc_str[] = {
 	{ OFPHFC_INCOMPATIBLE, "INCOMPATIBLE" },
 	{ OFPHFC_EPERM,        "EPERM"        },
 	{ 0, NULL }
 };
 
+#define OFPBRC_BAD_VERSION    0x0000
+#define OFPBRC_BAD_TYPE       0x0001
+#define OFPBRC_BAD_STAT       0x0002
+#define OFPBRC_BAD_VENDOR     0x0003
+#define OFPBRC_BAD_SUBTYPE    0x0004
+#define OFPBRC_EPERM          0x0005
+#define OFPBRC_BAD_LEN        0x0006
+#define OFPBRC_BUFFER_EMPTY   0x0007
+#define OFPBRC_BUFFER_UNKNOWN 0x0008
 static const struct tok ofpbrc_str[] = {
 	{ OFPBRC_BAD_VERSION,    "BAD_VERSION"    },
 	{ OFPBRC_BAD_TYPE,       "BAD_TYPE"       },
@@ -318,6 +460,15 @@ static const struct tok ofpbrc_str[] = {
 	{ 0, NULL }
 };
 
+#define OFPBAC_BAD_TYPE        0x0000
+#define OFPBAC_BAD_LEN         0x0001
+#define OFPBAC_BAD_VENDOR      0x0002
+#define OFPBAC_BAD_VENDOR_TYPE 0x0003
+#define OFPBAC_BAD_OUT_PORT    0x0004
+#define OFPBAC_BAD_ARGUMENT    0x0005
+#define OFPBAC_EPERM           0x0006
+#define OFPBAC_TOO_MANY        0x0007
+#define OFPBAC_BAD_QUEUE       0x0008
 static const struct tok ofpbac_str[] = {
 	{ OFPBAC_BAD_TYPE,        "BAD_TYPE"        },
 	{ OFPBAC_BAD_LEN,         "BAD_LEN"         },
@@ -331,6 +482,12 @@ static const struct tok ofpbac_str[] = {
 	{ 0, NULL }
 };
 
+#define OFPFMFC_ALL_TABLES_FULL   0x0000
+#define OFPFMFC_OVERLAP           0x0001
+#define OFPFMFC_EPERM             0x0002
+#define OFPFMFC_BAD_EMERG_TIMEOUT 0x0003
+#define OFPFMFC_BAD_COMMAND       0x0004
+#define OFPFMFC_UNSUPPORTED       0x0005
 static const struct tok ofpfmfc_str[] = {
 	{ OFPFMFC_ALL_TABLES_FULL,   "ALL_TABLES_FULL"   },
 	{ OFPFMFC_OVERLAP,           "OVERLAP"           },
@@ -341,12 +498,17 @@ static const struct tok ofpfmfc_str[] = {
 	{ 0, NULL }
 };
 
+#define OFPPMFC_BAD_PORT    0x0000
+#define OFPPMFC_BAD_HW_ADDR 0x0001
 static const struct tok ofppmfc_str[] = {
 	{ OFPPMFC_BAD_PORT,    "BAD_PORT"    },
 	{ OFPPMFC_BAD_HW_ADDR, "BAD_HW_ADDR" },
 	{ 0, NULL }
 };
 
+#define OFPQOFC_BAD_PORT  0x0000
+#define OFPQOFC_BAD_QUEUE 0x0001
+#define OFPQOFC_EPERM     0x0002
 static const struct tok ofpqofc_str[] = {
 	{ OFPQOFC_BAD_PORT,  "BAD_PORT"  },
 	{ OFPQOFC_BAD_QUEUE, "BAD_QUEUE" },
@@ -358,6 +520,54 @@ static const struct tok empty_str[] = {
 	{ 0, NULL }
 };
 
+/* lengths (fixed or minimal) of particular protocol structures */
+#define OF_SWITCH_CONFIG_LEN              12
+#define OF_PHY_PORT_LEN                   48
+#define OF_SWITCH_FEATURES_LEN            32
+#define OF_PORT_STATUS_LEN                64
+#define OF_PORT_MOD_LEN                   32
+#define OF_PACKET_IN_LEN                  20
+#define OF_ACTION_OUTPUT_LEN               8
+#define OF_ACTION_VLAN_VID_LEN             8
+#define OF_ACTION_VLAN_PCP_LEN             8
+#define OF_ACTION_DL_ADDR_LEN             16
+#define OF_ACTION_NW_ADDR_LEN              8
+#define OF_ACTION_TP_PORT_LEN              8
+#define OF_ACTION_NW_TOS_LEN               8
+#define OF_ACTION_VENDOR_HEADER_LEN        8
+#define OF_ACTION_HEADER_LEN               8
+#define OF_PACKET_OUT_LEN                 16
+#define OF_MATCH_LEN                      40
+#define OF_FLOW_MOD_LEN                   72
+#define OF_FLOW_REMOVED_LEN               88
+#define OF_ERROR_MSG_LEN                  12
+#define OF_STATS_REQUEST_LEN              12
+#define OF_STATS_REPLY_LEN                12
+#define OF_DESC_STATS_LEN               1056
+#define OF_FLOW_STATS_REQUEST_LEN         44
+#define OF_FLOW_STATS_LEN                 88
+#define OF_AGGREGATE_STATS_REQUEST_LEN    44
+#define OF_AGGREGATE_STATS_REPLY_LEN      24
+#define OF_TABLE_STATS_LEN                64
+#define OF_PORT_STATS_REQUEST_LEN          8
+#define OF_PORT_STATS_LEN                104
+#define OF_VENDOR_HEADER_LEN              12
+#define OF_QUEUE_PROP_HEADER_LEN           8
+#define OF_QUEUE_PROP_MIN_RATE_LEN        16
+#define OF_PACKET_QUEUE_LEN                8
+#define OF_QUEUE_GET_CONFIG_REQUEST_LEN   12
+#define OF_QUEUE_GET_CONFIG_REPLY_LEN     16
+#define OF_ACTION_ENQUEUE_LEN             16
+#define OF_QUEUE_STATS_REQUEST_LEN         8
+#define OF_QUEUE_STATS_LEN                32
+
+/* miscellaneous constants from [OF10] */
+#define OFP_MAX_TABLE_NAME_LEN     32
+#define OFP_MAX_PORT_NAME_LEN      16
+#define DESC_STR_LEN              256
+#define SERIAL_NUM_LEN             32
+#define OFP_ETH_ALEN                6
+#define OFP_VLAN_NONE          0xffff
 
 static const char *
 vlan_str(const uint16_t vid) {
@@ -438,7 +648,7 @@ of10_phy_ports_print(const u_char *cp, const u_char *ep, u_int len) {
 	const u_int len0 = len;
 
 	while (len) {
-		if (len < sizeof(struct ofp_phy_port))
+		if (len < OF_PHY_PORT_LEN)
 			goto corrupt;
 		/* port_no */
 		TCHECK2(*cp, 2);
@@ -491,7 +701,7 @@ of10_phy_ports_print(const u_char *cp, const u_char *ep, u_int len) {
 		of10_bitmap_print(ofppf_bm, EXTRACT_32BITS(cp), OFPPF_U);
 		cp += 4;
 next_port:
-		len -= sizeof(struct ofp_phy_port);
+		len -= OF_PHY_PORT_LEN;
 	} /* while */
 	return cp;
 
@@ -514,7 +724,7 @@ of10_queue_props_print(const u_char *cp, const u_char *ep, u_int len) {
 	while (len) {
 		u_char plen_bogus = 0, skip = 0;
 
-		if (len < sizeof(struct ofp_queue_prop_header))
+		if (len < OF_QUEUE_PROP_HEADER_LEN)
 			goto corrupt;
 		/* property */
 		TCHECK2(*cp, 2);
@@ -526,7 +736,7 @@ of10_queue_props_print(const u_char *cp, const u_char *ep, u_int len) {
 		plen = EXTRACT_16BITS(cp);
 		cp += 2;
 		printf(", len %u", plen);
-		if (plen < sizeof(struct ofp_queue_prop_header) || plen > len)
+		if (plen < OF_QUEUE_PROP_HEADER_LEN || plen > len)
 			goto corrupt;
 		/* pad */
 		TCHECK2(*cp, 4);
@@ -534,10 +744,10 @@ of10_queue_props_print(const u_char *cp, const u_char *ep, u_int len) {
 		/* property-specific constraints and decoding */
 		switch (property) {
 		case OFPQT_NONE:
-			plen_bogus = plen != sizeof(struct ofp_queue_prop_header);
+			plen_bogus = plen != OF_QUEUE_PROP_HEADER_LEN;
 			break;
 		case OFPQT_MIN_RATE:
-			plen_bogus = plen != sizeof(struct ofp_queue_prop_min_rate);
+			plen_bogus = plen != OF_QUEUE_PROP_MIN_RATE_LEN;
 			break;
 		default:
 			skip = 1;
@@ -586,7 +796,7 @@ of10_queues_print(const u_char *cp, const u_char *ep, u_int len) {
 	uint16_t desclen;
 
 	while (len) {
-		if (len < sizeof(struct ofp_packet_queue))
+		if (len < OF_PACKET_QUEUE_LEN)
 			goto corrupt;
 		/* queue_id */
 		TCHECK2(*cp, 4);
@@ -597,18 +807,18 @@ of10_queues_print(const u_char *cp, const u_char *ep, u_int len) {
 		desclen = EXTRACT_16BITS(cp);
 		cp += 2;
 		printf(", len %u", desclen);
-		if (desclen < sizeof(struct ofp_packet_queue) || desclen > len)
+		if (desclen < OF_PACKET_QUEUE_LEN || desclen > len)
 			goto corrupt;
 		/* pad */
 		TCHECK2(*cp, 2);
 		cp += 2;
 		/* properties */
 		if (vflag < 2) {
-			TCHECK2(*cp, desclen - sizeof(struct ofp_packet_queue));
-			cp += desclen - sizeof(struct ofp_packet_queue);
+			TCHECK2(*cp, desclen - OF_PACKET_QUEUE_LEN);
+			cp += desclen - OF_PACKET_QUEUE_LEN;
 			goto next_queue;
 		}
-		if (ep == (cp = of10_queue_props_print(cp, ep, desclen - sizeof(struct ofp_packet_queue))))
+		if (ep == (cp = of10_queue_props_print(cp, ep, desclen - OF_PACKET_QUEUE_LEN)))
 			return ep; /* end of snapshot */
 next_queue:
 		len -= desclen;
@@ -737,7 +947,7 @@ of10_actions_print(const char *pfx, const u_char *cp, const u_char *ep,
 	while (len) {
 		u_char alen_bogus = 0, skip = 0;
 
-		if (len < sizeof(struct ofp_action_header))
+		if (len < OF_ACTION_HEADER_LEN)
 			goto corrupt;
 		/* type */
 		TCHECK2(*cp, 2);
@@ -750,7 +960,7 @@ of10_actions_print(const char *pfx, const u_char *cp, const u_char *ep,
 		cp += 2;
 		printf(", len %u", alen);
 		/* On action size underrun/overrun skip the rest of the action list. */
-		if (alen < sizeof(struct ofp_action_header) || alen > len)
+		if (alen < OF_ACTION_HEADER_LEN || alen > len)
 			goto corrupt;
 		/* On action size inappropriate for the given type or invalid type just skip
 		 * the current action, as the basic length constraint has been met. */
@@ -920,7 +1130,7 @@ of10_features_reply_print(const u_char *cp, const u_char *ep, const u_int len) {
 	of10_bitmap_print(ofpat_bm, EXTRACT_32BITS(cp), OFPAT_U);
 	cp += 4;
 	/* ports */
-	return of10_phy_ports_print(cp, ep, len - sizeof(struct ofp_switch_features));
+	return of10_phy_ports_print(cp, ep, len - OF_SWITCH_FEATURES_LEN);
 
 trunc:
 	printf(" [|openflow]");
@@ -976,7 +1186,7 @@ of10_flow_mod_print(const u_char *cp, const u_char *ep, const u_int len) {
 	of10_bitmap_print(ofpff_bm, EXTRACT_16BITS(cp), OFPFF_U);
 	cp += 2;
 	/* actions */
-	return of10_actions_print("\n\t ", cp, ep, len - sizeof(struct ofp_flow_mod));
+	return of10_actions_print("\n\t ", cp, ep, len - OF_FLOW_MOD_LEN);
 
 trunc:
 	printf(" [|openflow]");
@@ -1037,7 +1247,7 @@ of10_stats_request_print(const u_char *cp, const u_char *ep, u_int len) {
 		printf(" (bogus)");
 	cp += 2;
 	/* type-specific body of one of fixed lengths */
-	len -= sizeof(struct ofp_stats_request);
+	len -= OF_STATS_REQUEST_LEN;
 	switch(type) {
 	case OFPST_DESC:
 	case OFPST_TABLE:
@@ -1046,7 +1256,7 @@ of10_stats_request_print(const u_char *cp, const u_char *ep, u_int len) {
 		return cp;
 	case OFPST_FLOW:
 	case OFPST_AGGREGATE:
-		if (len != sizeof(struct ofp_flow_stats_request))
+		if (len != OF_FLOW_STATS_REQUEST_LEN)
 			goto corrupt;
 		/* match */
 		if (ep == (cp = of10_match_print("\n\t ", cp, ep)))
@@ -1063,7 +1273,7 @@ of10_stats_request_print(const u_char *cp, const u_char *ep, u_int len) {
 		printf(", out_port %s", tok2str(ofpp_str, "%u", EXTRACT_16BITS(cp)));
 		return cp + 2;
 	case OFPST_PORT:
-		if (len != sizeof(struct ofp_port_stats_request))
+		if (len != OF_PORT_STATS_REQUEST_LEN)
 			goto corrupt;
 		/* port_no */
 		TCHECK2(*cp, 2);
@@ -1073,7 +1283,7 @@ of10_stats_request_print(const u_char *cp, const u_char *ep, u_int len) {
 		TCHECK2(*cp, 6);
 		return cp + 6;
 	case OFPST_QUEUE:
-		if (len != sizeof(struct ofp_queue_stats_request))
+		if (len != OF_QUEUE_STATS_REQUEST_LEN)
 			goto corrupt;
 		/* port_no */
 		TCHECK2(*cp, 2);
@@ -1103,7 +1313,7 @@ trunc:
 /* ibid */
 static const u_char *
 of10_desc_stats_reply_print(const u_char *cp, const u_char *ep, const u_int len) {
-	if (len != sizeof(struct ofp_desc_stats))
+	if (len != OF_DESC_STATS_LEN)
 		goto corrupt;
 	/* mfr_desc */
 	TCHECK2(*cp, DESC_STR_LEN);
@@ -1153,13 +1363,13 @@ of10_flow_stats_reply_print(const u_char *cp, const u_char *ep, u_int len) {
 	uint16_t entry_len;
 
 	while (len) {
-		if (len < sizeof(struct ofp_flow_stats))
+		if (len < OF_FLOW_STATS_LEN)
 			goto corrupt;
 		/* length */
 		TCHECK2(*cp, 2);
 		entry_len = EXTRACT_16BITS(cp);
 		printf("\n\t length %u", entry_len);
-		if (entry_len < sizeof(struct ofp_flow_stats) || entry_len > len)
+		if (entry_len < OF_FLOW_STATS_LEN || entry_len > len)
 			goto corrupt;
 		cp += 2;
 		/* table_id */
@@ -1208,7 +1418,7 @@ of10_flow_stats_reply_print(const u_char *cp, const u_char *ep, u_int len) {
 		printf(", byte_count %" PRIu64, EXTRACT_64BITS(cp));
 		cp += 8;
 		/* actions */
-		if (ep == (cp = of10_actions_print("\n\t  ", cp, ep, entry_len - sizeof(struct ofp_flow_stats))))
+		if (ep == (cp = of10_actions_print("\n\t  ", cp, ep, entry_len - OF_FLOW_STATS_LEN)))
 			return ep; /* end of snapshot */
 
 		len -= entry_len;
@@ -1228,7 +1438,7 @@ trunc:
 static const u_char *
 of10_aggregate_stats_reply_print(const u_char *cp, const u_char *ep,
                                  const u_int len) {
-	if (len != sizeof(struct ofp_aggregate_stats_reply))
+	if (len != OF_AGGREGATE_STATS_REPLY_LEN)
 		goto corrupt;
 	/* packet_count */
 	TCHECK2(*cp, 8);
@@ -1262,7 +1472,7 @@ of10_table_stats_reply_print(const u_char *cp, const u_char *ep, u_int len) {
 	const u_int len0 = len;
 
 	while (len) {
-		if (len < sizeof(struct ofp_table_stats))
+		if (len < OF_TABLE_STATS_LEN)
 			goto corrupt;
 		/* table_id */
 		TCHECK2(*cp, 1);
@@ -1279,12 +1489,12 @@ of10_table_stats_reply_print(const u_char *cp, const u_char *ep, u_int len) {
 		cp += OFP_MAX_TABLE_NAME_LEN;
 		/* wildcards */
 		TCHECK2(*cp, 4);
-		printf("\n\t wildcards 0x%08x", EXTRACT_32BITS(cp));
+		printf("\n\t  wildcards 0x%08x", EXTRACT_32BITS(cp));
 		of10_bitmap_print(ofpfw_bm, EXTRACT_32BITS(cp), OFPFW_U);
 		cp += 4;
 		/* max_entries */
 		TCHECK2(*cp, 4);
-		printf("\n\t max_entries %u", EXTRACT_32BITS(cp));
+		printf("\n\t  max_entries %u", EXTRACT_32BITS(cp));
 		cp += 4;
 		/* active_count */
 		TCHECK2(*cp, 4);
@@ -1299,7 +1509,7 @@ of10_table_stats_reply_print(const u_char *cp, const u_char *ep, u_int len) {
 		printf(", matched_count %" PRIu64, EXTRACT_64BITS(cp));
 		cp += 8;
 
-		len -= sizeof(struct ofp_table_stats);
+		len -= OF_TABLE_STATS_LEN;
 	} /* while */
 	return cp;
 
@@ -1319,15 +1529,15 @@ of10_port_stats_reply_print(const u_char *cp, const u_char *ep, u_int len) {
 	const u_int len0 = len;
 
 	while (len) {
-		if (len < sizeof(struct ofp_port_stats))
+		if (len < OF_PORT_STATS_LEN)
 			goto corrupt;
 		/* port_no */
 		TCHECK2(*cp, 2);
 		printf("\n\t  port_no %s", tok2str(ofpp_str, "%u", EXTRACT_16BITS(cp)));
 		cp += 2;
 		if (vflag < 2) {
-			TCHECK2(*cp, sizeof(struct ofp_port_stats) - 2);
-			cp += sizeof(struct ofp_port_stats) - 2;
+			TCHECK2(*cp, OF_PORT_STATS_LEN - 2);
+			cp += OF_PORT_STATS_LEN - 2;
 			goto next_port;
 		}
 		/* pad */
@@ -1382,7 +1592,7 @@ of10_port_stats_reply_print(const u_char *cp, const u_char *ep, u_int len) {
 		printf(", collisions %" PRIu64, EXTRACT_64BITS(cp));
 		cp += 8;
 next_port:
-		len -= sizeof(struct ofp_port_stats);
+		len -= OF_PORT_STATS_LEN;
 	} /* while */
 	return cp;
 
@@ -1402,7 +1612,7 @@ of10_queue_stats_reply_print(const u_char *cp, const u_char *ep, u_int len) {
 	const u_int len0 = len;
 
 	while (len) {
-		if (len < sizeof(struct ofp_queue_stats))
+		if (len < OF_QUEUE_STATS_LEN)
 			goto corrupt;
 		/* port_no */
 		TCHECK2(*cp, 2);
@@ -1428,7 +1638,7 @@ of10_queue_stats_reply_print(const u_char *cp, const u_char *ep, u_int len) {
 		printf(", tx_errors %" PRIu64, EXTRACT_64BITS(cp));
 		cp += 8;
 
-		len -= sizeof(struct ofp_port_stats);
+		len -= OF_QUEUE_STATS_LEN;
 	} /* while */
 	return cp;
 
@@ -1469,7 +1679,7 @@ of10_stats_reply_print(const u_char *cp, const u_char *ep, const u_int len) {
 			type == OFPST_VENDOR    ? of10_vendor_data_print           :
 			NULL;
 		if (decoder != NULL)
-			return decoder(cp, ep, len - sizeof(struct ofp_stats_reply));
+			return decoder(cp, ep, len - OF_STATS_REPLY_LEN);
 	}
 	TCHECK2(*cp0, len);
 	return cp0 + len;
@@ -1498,13 +1708,13 @@ of10_packet_out_print(const u_char *cp, const u_char *ep, const u_int len) {
 	TCHECK2(*cp, 2);
 	actions_len = EXTRACT_16BITS(cp);
 	cp += 2;
-	if (actions_len > len - sizeof(struct ofp_packet_out))
+	if (actions_len > len - OF_PACKET_OUT_LEN)
 		goto corrupt;
 	/* actions */
 	if (ep == (cp = of10_actions_print("\n\t ", cp, ep, actions_len)))
 		return ep; /* end of snapshot */
 	/* data */
-	return of10_data_print(cp, ep, len - sizeof(struct ofp_packet_out) - actions_len);
+	return of10_data_print(cp, ep, len - OF_PACKET_OUT_LEN - actions_len);
 
 corrupt: /* skip the rest of the message body */
 	printf(" (corrupt)");
@@ -1538,8 +1748,8 @@ of10_packet_in_print(const u_char *cp, const u_char *ep, const u_int len) {
 	TCHECK2(*cp, 1);
 	cp += 1;
 	/* data */
-	/* 2 mock octets count in sizeof() but not in len */
-	return of10_data_print(cp, ep, len - (sizeof(struct ofp_packet_in) - 2));
+	/* 2 mock octets count in OF_PACKET_IN_LEN but not in len */
+	return of10_data_print(cp, ep, len - (OF_PACKET_IN_LEN - 2));
 
 trunc:
 	printf(" [|openflow]");
@@ -1622,7 +1832,7 @@ of10_error_print(const u_char *cp, const u_char *ep, const u_int len) {
 	printf(", code %s", tok2str(code_str, "invalid (0x%04x)", EXTRACT_16BITS(cp)));
 	cp += 2;
 	/* data */
-	return of10_data_print(cp, ep, len - sizeof(struct ofp_error_msg));
+	return of10_data_print(cp, ep, len - OF_ERROR_MSG_LEN);
 
 trunc:
 	printf(" [|openflow]");
@@ -1650,14 +1860,14 @@ of10_header_body_print(const u_char *cp, const u_char *ep, const uint8_t type,
 	case OFPT_GET_CONFIG_REQUEST: /* [OF10] Section 5.3.2 */
 	case OFPT_BARRIER_REQUEST: /* [OF10] Section 5.3.7 */
 	case OFPT_BARRIER_REPLY: /* ibid */
-		if (len != sizeof(struct ofp_header))
+		if (len != OF_HEADER_LEN)
 			goto corrupt;
 		break;
 
 	/* OpenFlow header and fixed-size message body. */
 	case OFPT_SET_CONFIG: /* [OF10] Section 5.3.2 */
 	case OFPT_GET_CONFIG_REPLY: /* ibid */
-		if (len != sizeof(struct ofp_switch_config))
+		if (len != OF_SWITCH_CONFIG_LEN)
 			goto corrupt;
 		if (vflag < 1)
 			goto next_message;
@@ -1670,13 +1880,13 @@ of10_header_body_print(const u_char *cp, const u_char *ep, const uint8_t type,
 		printf(", miss_send_len %u", EXTRACT_16BITS(cp));
 		return cp + 2;
 	case OFPT_PORT_MOD:
-		if (len != sizeof(struct ofp_port_mod))
+		if (len != OF_PORT_MOD_LEN)
 			goto corrupt;
 		if (vflag < 1)
 			goto next_message;
 		return of10_port_mod_print(cp, ep);
 	case OFPT_QUEUE_GET_CONFIG_REQUEST: /* [OF10] Section 5.3.4 */
-		if (len != sizeof(struct ofp_queue_get_config_request))
+		if (len != OF_QUEUE_GET_CONFIG_REQUEST_LEN)
 			goto corrupt;
 		if (vflag < 1)
 			goto next_message;
@@ -1688,13 +1898,13 @@ of10_header_body_print(const u_char *cp, const u_char *ep, const uint8_t type,
 		TCHECK2(*cp, 2);
 		return cp + 2;
 	case OFPT_FLOW_REMOVED:
-		if (len != sizeof(struct ofp_flow_removed))
+		if (len != OF_FLOW_REMOVED_LEN)
 			goto corrupt;
 		if (vflag < 1)
 			goto next_message;
 		return of10_flow_removed_print(cp, ep);
 	case OFPT_PORT_STATUS: /* [OF10] Section 5.4.3 */
-		if (len != sizeof(struct ofp_port_status))
+		if (len != OF_PORT_STATUS_LEN)
 			goto corrupt;
 		if (vflag < 1)
 			goto next_message;
@@ -1706,11 +1916,11 @@ of10_header_body_print(const u_char *cp, const u_char *ep, const uint8_t type,
 		TCHECK2(*cp, 7);
 		cp += 7;
 		/* desc */
-		return of10_phy_ports_print(cp, ep, sizeof(struct ofp_phy_port));
+		return of10_phy_ports_print(cp, ep, OF_PHY_PORT_LEN);
 
 	/* OpenFlow header, fixed-size message body and n * fixed-size data units. */
 	case OFPT_FEATURES_REPLY:
-		if (len < sizeof(struct ofp_switch_features))
+		if (len < OF_SWITCH_FEATURES_LEN)
 			goto corrupt;
 		if (vflag < 1)
 			goto next_message;
@@ -1722,25 +1932,25 @@ of10_header_body_print(const u_char *cp, const u_char *ep, const uint8_t type,
 	case OFPT_ECHO_REPLY: /* [OF10] Section 5.5.3 */
 		if (vflag < 1)
 			goto next_message;
-		return of10_data_print(cp, ep, len - sizeof(struct ofp_header));
+		return of10_data_print(cp, ep, len - OF_HEADER_LEN);
 
 	/* OpenFlow header, fixed-size message body and variable-size data. */
 	case OFPT_ERROR:
-		if (len < sizeof(struct ofp_error_msg))
+		if (len < OF_ERROR_MSG_LEN)
 			goto corrupt;
 		if (vflag < 1)
 			goto next_message;
 		return of10_error_print(cp, ep, len);
 	case OFPT_VENDOR:
 	  /* [OF10] Section 5.5.4 */
-		if (len < sizeof(struct ofp_vendor_header))
+		if (len < OF_VENDOR_HEADER_LEN)
 			goto corrupt;
 		if (vflag < 1)
 			goto next_message;
-		return of10_vendor_data_print(cp, ep, len - sizeof(struct ofp_header));
+		return of10_vendor_data_print(cp, ep, len - OF_HEADER_LEN);
 	case OFPT_PACKET_IN:
-		/* 2 mock octets count in sizeof() but not in len */
-		if (len < sizeof(struct ofp_packet_in) - 2)
+		/* 2 mock octets count in OF_PACKET_IN_LEN but not in len */
+		if (len < OF_PACKET_IN_LEN - 2)
 			goto corrupt;
 		if (vflag < 1)
 			goto next_message;
@@ -1750,7 +1960,7 @@ of10_header_body_print(const u_char *cp, const u_char *ep, const uint8_t type,
 	/* b. OpenFlow header and one of the fixed-size message bodies. */
 	/* c. OpenFlow header, fixed-size message body and variable-size data. */
 	case OFPT_STATS_REQUEST:
-		if (len < sizeof(struct ofp_stats_request))
+		if (len < OF_STATS_REQUEST_LEN)
 			goto corrupt;
 		if (vflag < 1)
 			goto next_message;
@@ -1761,7 +1971,7 @@ of10_header_body_print(const u_char *cp, const u_char *ep, const uint8_t type,
 	/* c. OpenFlow header and n * variable-size data units. */
 	/* d. OpenFlow header, fixed-size message body and variable-size data. */
 	case OFPT_STATS_REPLY:
-		if (len < sizeof(struct ofp_stats_reply))
+		if (len < OF_STATS_REPLY_LEN)
 			goto corrupt;
 		if (vflag < 1)
 			goto next_message;
@@ -1769,7 +1979,7 @@ of10_header_body_print(const u_char *cp, const u_char *ep, const uint8_t type,
 
 	/* OpenFlow header and n * variable-size data units and variable-size data. */
 	case OFPT_PACKET_OUT:
-		if (len < sizeof(struct ofp_packet_out))
+		if (len < OF_PACKET_OUT_LEN)
 			goto corrupt;
 		if (vflag < 1)
 			goto next_message;
@@ -1777,7 +1987,7 @@ of10_header_body_print(const u_char *cp, const u_char *ep, const uint8_t type,
 
 	/* OpenFlow header, fixed-size message body and n * variable-size data units. */
 	case OFPT_FLOW_MOD:
-		if (len < sizeof(struct ofp_flow_mod))
+		if (len < OF_FLOW_MOD_LEN)
 			goto corrupt;
 		if (vflag < 1)
 			goto next_message;
@@ -1785,7 +1995,7 @@ of10_header_body_print(const u_char *cp, const u_char *ep, const uint8_t type,
 
 	/* OpenFlow header, fixed-size message body and n * variable-size data units. */
 	case OFPT_QUEUE_GET_CONFIG_REPLY: /* [OF10] Section 5.3.4 */
-		if (len < sizeof(struct ofp_queue_get_config_reply))
+		if (len < OF_QUEUE_GET_CONFIG_REPLY_LEN)
 			goto corrupt;
 		if (vflag < 1)
 			goto next_message;
@@ -1797,15 +2007,15 @@ of10_header_body_print(const u_char *cp, const u_char *ep, const uint8_t type,
 		TCHECK2(*cp, 6);
 		cp += 6;
 		/* queues */
-		return of10_queues_print(cp, ep, len - sizeof(struct ofp_queue_get_config_reply));
+		return of10_queues_print(cp, ep, len - OF_QUEUE_GET_CONFIG_REPLY_LEN);
 	} /* switch (type) */
 	goto next_message;
 
 corrupt: /* skip the message body */
 	printf(" (corrupt)");
 next_message:
-	TCHECK2(*cp0, len0 - sizeof(struct ofp_header));
-	return cp0 + len0 - sizeof(struct ofp_header);
+	TCHECK2(*cp0, len0 - OF_HEADER_LEN);
+	return cp0 + len0 - OF_HEADER_LEN;
 trunc:
 	printf(" [|openflow]");
 	return ep;
