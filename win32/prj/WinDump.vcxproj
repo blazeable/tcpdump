@@ -195,6 +195,7 @@
     <ClCompile Include="..\..\print-bgp.c" />
     <ClCompile Include="..\..\print-bootp.c" />
     <ClCompile Include="..\..\print-bt.c" />
+    <ClCompile Include="..\..\print-calm-fast.c" />
     <ClCompile Include="..\..\print-carp.c" />
     <ClCompile Include="..\..\print-cdp.c" />
     <ClCompile Include="..\..\print-cfm.c" />
@@ -217,6 +218,7 @@
     <ClCompile Include="..\..\print-forces.c" />
     <ClCompile Include="..\..\print-fr.c" />
     <ClCompile Include="..\..\print-frag6.c" />
+    <ClCompile Include="..\..\print-geonet.c" />
     <ClCompile Include="..\..\print-gre.c" />
     <ClCompile Include="..\..\print-hsrp.c" />
     <ClCompile Include="..\..\print-icmp.c" />
@@ -250,6 +252,7 @@
     <ClCompile Include="..\..\print-msdp.c" />
     <ClCompile Include="..\..\print-msnlb.c" />
     <ClCompile Include="..\..\print-netbios.c" />
+    <ClCompile Include="..\..\print-nflog.c" />
     <ClCompile Include="..\..\print-nfs.c" />
     <ClCompile Include="..\..\print-ntp.c" />
     <ClCompile Include="..\..\print-null.c" />
@@ -363,7 +366,7 @@
     <ClInclude Include="..\..\nlpid.h" />
     <ClInclude Include="..\..\ntp.h" />
     <ClInclude Include="..\..\oakley.h" />
-    <ClInclude Include="..\..\openflow-1.0.h" />
+    <ClInclude Include="..\..\openflow.h" />
     <ClInclude Include="..\..\ospf.h" />
     <ClInclude Include="..\..\ospf6.h" />
     <ClInclude Include="..\..\oui.h" />
