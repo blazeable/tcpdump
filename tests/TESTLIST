@@ -20,9 +20,9 @@ isakmp2 isakmp-pointer-loop.pcap    isakmp2.out -t
 isakmp3 isakmp-identification-segfault.pcap isakmp3.out -t -v
 isakmp4 isakmp4500.pcap             isakmp4.out -t -E "file esp-secrets.txt"
 
-# LMP tests (what is it?)
-# fails right now.
-#lmp     lmp.pcap                    lmp.out -t -v -v
+# Link Management Protocol tests
+lmp		lmp.pcap		lmp.out -t -T lmp
+lmp-v		lmp.pcap		lmp-v.out -t -T lmp -v
 
 # MPLS tests
 mpls-ldp-hello	mpls-ldp-hello.pcap	mpls-ldp-hello.out -t -v
@@ -82,6 +82,14 @@ spb	            spb.pcap	            spb.out -t
 # SPB BPDUv4 tests
 spb_bpduv4      spb_bpduv4.pcap       spb_bpduv4.out -t
 
+# DCB Tests
+dcb_ets         dcb_ets.pcap          dcb_ets.out   -t -vv
+dcb_pfc         dcb_pfc.pcap          dcb_pfc.out   -t -vv
+dcb_qcn         dcb_qcn.pcap          dcb_qcn.out   -t -vv
+
+# EVB tests
+evb             evb.pcap              evb.out       -t -vv
+
 # RIP tests
 ripv1v2         ripv1v2.pcap            ripv1v2.out     -t -v
 ripv2_auth      ripv2_auth.pcap         ripv2_auth.out  -t -v
@@ -122,6 +130,7 @@ mptcp-fclose	mptcp-fclose.pcap	mptcp-fclose.out	-t
 # OpenFlow tests
 of10_p3295-vv	of10_p3295.pcap		of10_p3295-vv.out	-t -vv
 of10_s4810-vv	of10_s4810.pcap		of10_s4810-vv.out	-t -vv
+of10_pf5240-vv	of10_pf5240.pcap	of10_pf5240-vv.out	-t -vv
 
 # GeoNetworking and CALM FAST tests
 geonet-calm-fast	geonet_and_calm_fast.pcap	geonet_and_calm_fast.out	-t -vv -n

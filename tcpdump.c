@@ -312,9 +312,6 @@ static struct printer printers[] = {
 };
 
 static struct ndo_printer ndo_printers[] = {
-#ifdef DLT_NFLOG
-	{ nflog_if_print,	DLT_NFLOG},
-#endif
 	{ ether_if_print,	DLT_EN10MB },
 #ifdef DLT_IPNET
 	{ ipnet_if_print,	DLT_IPNET },
@@ -333,6 +330,11 @@ static struct ndo_printer ndo_printers[] = {
 #endif
 #ifdef DLT_NETANALYZER_TRANSPARENT
 	{ netanalyzer_transparent_if_print, DLT_NETANALYZER_TRANSPARENT },
+#endif
+#ifdef DLT_NFLOG
+#ifdef HAVE_LINUX_NETFILTER_NFNETLINK_LOG_H
+	{ nflog_if_print,	DLT_NFLOG},
+#endif
 #endif
 	{ NULL,			0 },
 };
@@ -1022,6 +1024,8 @@ main(int argc, char **argv)
 				packettype = PT_PGM;
 			else if (strcasecmp(optarg, "pgm_zmtp1") == 0)
 				packettype = PT_PGM_ZMTP1;
+			else if (strcasecmp(optarg, "lmp") == 0)
+				packettype = PT_LMP;
 			else
 				error("unknown packet type `%s'", optarg);
 			break;
