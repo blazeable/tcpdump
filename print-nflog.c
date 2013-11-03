@@ -37,24 +37,21 @@
 #include "netdissect.h"
 #include "interface.h"
 
-#ifdef HAVE_LINUX_NETFILTER_NFNETLINK_LOG_H
-#include <linux/netfilter/nfnetlink_log.h>
 #include "nflog.h"
 
 #ifdef DLT_NFLOG
 
-const struct tok nflog_values[] = {
+#define NFULA_PAYLOAD 9
+
+static const struct tok nflog_values[] = {
 	{ AF_INET,		"IPv4" },
 	{ AF_INET6,		"IPv6" },
 	{ 0,				NULL }
 };
 
 static inline void
-nflog_hdr_print(struct netdissect_options *ndo, const u_char *bp, u_int length)
+nflog_hdr_print(struct netdissect_options *ndo, const nflog_hdr_t *hdr, u_int length)
 {
-	const nflog_hdr_t *hdr;
-	hdr = (const nflog_hdr_t *)bp;
-
 	ND_PRINT((ndo, "version %d, resource ID %d", hdr->nflog_version, ntohs(hdr->nflog_rid)));
 
 	if (!ndo->ndo_qflag) {
@@ -72,40 +69,46 @@ nflog_hdr_print(struct netdissect_options *ndo, const u_char *bp, u_int length)
 	ND_PRINT((ndo, ", length %u: ", length));
 }
 
-static void
-nflog_print(struct netdissect_options *ndo, const u_char *p, u_int length, u_int caplen)
+u_int
+nflog_if_print(struct netdissect_options *ndo,
+			   const struct pcap_pkthdr *h, const u_char *p)
 {
-	const nflog_hdr_t *hdr;
+	const nflog_hdr_t *hdr = (const nflog_hdr_t *)p;
 	const nflog_tlv_t *tlv;
 	u_int16_t size;
+	u_int16_t h_size = sizeof(nflog_hdr_t);
+	u_int caplen = h->caplen;
+	u_int length = h->len;
 
-	if (caplen < (int) sizeof(nflog_hdr_t)) {
+	if (caplen < (int) sizeof(nflog_hdr_t) || length < (int) sizeof(nflog_hdr_t)) {
 		ND_PRINT((ndo, "[|nflog]"));
-		return;
+		return h_size;
+	}
+
+	if (!(hdr->nflog_version) == 0) {
+		ND_PRINT((ndo, "version %u (unknown)", hdr->nflog_version));
+		return h_size;
 	}
 
 	if (ndo->ndo_eflag)
-		nflog_hdr_print(ndo, p, length);
+		nflog_hdr_print(ndo, hdr, length);
 
 	length -= sizeof(nflog_hdr_t);
 	caplen -= sizeof(nflog_hdr_t);
-	hdr = (const nflog_hdr_t *)p;
 	p += sizeof(nflog_hdr_t);
 
 	do {
 		tlv = (const nflog_tlv_t *) p;
 		size = tlv->tlv_length;
 
-		/* wrong size of the packet */
-		if (size > length )
-			return;
-
-		/* wrong tlv type */
-		if (tlv->tlv_type > NFULA_MAX)
-			return;
-
 		if (size % 4 != 0)
 			size += 4 - size % 4;
+
+		h_size = h_size + size;
+
+		/* wrong size of the packet */
+		if (size > length || size == 0)
+			return h_size;
 
 		p += size;
 		length = length - size;
@@ -117,6 +120,7 @@ nflog_print(struct netdissect_options *ndo, const u_char *p, u_int length, u_int
 	p = p - size + 4;
 	length += size - 4;
 	caplen += size - 4;
+	h_size -= length;
 
 	switch (hdr->nflog_family) {
 
@@ -132,23 +136,15 @@ nflog_print(struct netdissect_options *ndo, const u_char *p, u_int length, u_int
 
 	default:
 		if (!ndo->ndo_eflag)
-			nflog_hdr_print(ndo, (u_char *)hdr,
+			nflog_hdr_print(ndo, hdr,
 				length + sizeof(nflog_hdr_t));
 
 		if (!ndo->ndo_suppress_default_print)
 			ndo->ndo_default_print(ndo, p, caplen);
 		break;
 	}
+
+	return h_size;
 }
 
-u_int
-nflog_if_print(struct netdissect_options *ndo,
-			   const struct pcap_pkthdr *h, const u_char *p)
-{
-
-	nflog_print(ndo, p, h->len, h->caplen);
-	return (sizeof(nflog_hdr_t));
-}
-
-#endif /* HAVE_LINUX_NETFILTER_NFNETLINK_LOG_H */
 #endif /* DLT_NFLOG */
