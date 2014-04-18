@@ -1,5 +1,3 @@
-.\" @(#) $Header: /tcpdump/master/tcpdump/tcpdump.1.in,v 1.2 2008-11-09 23:35:03 mcr Exp $ (LBL)
-.\"
 .\"	$NetBSD: tcpdump.8,v 1.9 2003/03/31 00:18:17 perry Exp $
 .\"
 .\" Copyright (c) 1987, 1988, 1989, 1990, 1991, 1992, 1994, 1995, 1996, 1997
@@ -22,7 +20,7 @@
 .\" WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
 .\" MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 .\"
-.TH TCPDUMP 1  "12 July 2012"
+.TH TCPDUMP 1  "26 February 2014"
 .SH NAME
 tcpdump \- dump traffic on a network
 .SH SYNOPSIS
@@ -70,7 +68,7 @@ tcpdump \- dump traffic on a network
 .br
 .ti +8
 [
-.B \-P
+.B \-Q
 .I in|out|inout
 ]
 .ti +8
@@ -387,7 +385,7 @@ will be shown.
 .B \-j
 Set the time stamp type for the capture to \fItstamp_type\fP.  The names
 to use for the time stamp types are given in
-.BR pcap-tstamp-type (@MAN_MISC_INFO@);
+.BR pcap-tstamp (@MAN_MISC_INFO@);
 not all the types listed there will necessarily be valid for any given
 interface.
 .TP
@@ -479,7 +477,7 @@ Note that the interface might be in promiscuous
 mode for some other reason; hence, `-p' cannot be used as an abbreviation for
 `ether host {local-hw-addr} or ether broadcast'.
 .TP
-.B \-P
+.B \-Q
 Choose send/receive direction \fIdirection\fR for which packets should be
 captured. Possible values are `in', `out' and `inout'. Not available
 on all platforms.
@@ -1412,39 +1410,45 @@ Sun NFS (Network File System) requests and replies are printed as:
 .RS
 .nf
 .sp .5
-\fIsrc.xid > dst.nfs: len op args\fP
-\fIsrc.nfs > dst.xid: reply stat len op results\fP
+\fIsrc.sport > dst.nfs: NFS request xid xid len op args\fP
+\fIsrc.nfs > dst.dport: NFS reply xid xid reply stat len op results\fP
 .sp .5
 \f(CW
-sushi.6709 > wrl.nfs: 112 readlink fh 21,24/10.73165
-wrl.nfs > sushi.6709: reply ok 40 readlink "../var"
-sushi.201b > wrl.nfs:
+sushi.1023 > wrl.nfs: NFS request xid 26377
+	112 readlink fh 21,24/10.73165
+wrl.nfs > sushi.1023: NFS reply xid 26377
+	reply ok 40 readlink "../var"
+sushi.1022 > wrl.nfs: NFS request xid 8219
 	144 lookup fh 9,74/4096.6878 "xcolors"
-wrl.nfs > sushi.201b:
+wrl.nfs > sushi.1022: NFS reply xid 8219
 	reply ok 128 lookup fh 9,74/4134.3150
 \fR
 .sp .5
 .fi
 .RE
-In the first line, host \fIsushi\fP sends a transaction with id \fI6709\fP
-to \fIwrl\fP (note that the number following the src host is a
-transaction id, \fInot\fP the source port).
+In the first line, host \fIsushi\fP sends a transaction with id \fI26377\fP
+to \fIwrl\fP.
 The request was 112 bytes,
 excluding the UDP and IP headers.
 The operation was a \fIreadlink\fP
 (read symbolic link) on file handle (\fIfh\fP) 21,24/10.731657119.
 (If one is lucky, as in this case, the file handle can be interpreted
 as a major,minor device number pair, followed by the inode number and
-generation number.)
-\fIWrl\fP replies `ok' with the contents of the link.
+generation number.) In the second line, \fIwrl\fP replies `ok' with
+the same transaction id and the contents of the link.
 .LP
-In the third line, \fIsushi\fP asks \fIwrl\fP to lookup the name
-`\fIxcolors\fP' in directory file 9,74/4096.6878.
+In the third line, \fIsushi\fP asks (using a new transaction id) \fIwrl\fP
+to lookup the name `\fIxcolors\fP' in directory file 9,74/4096.6878. In
+the fourth line, \fIwrl\fP sends a reply with the respective transaction id.
+.LP
 Note that the data printed
 depends on the operation type.
 The format is intended to be self
 explanatory if read in conjunction with
 an NFS protocol spec.
+Also note that older versions of tcpdump printed NFS packets in a
+slightly different format: the transaction id (xid) would be printed
+instead of the non-NFS port number of the packet.
 .LP
 If the \-v (verbose) flag is given, additional information is printed.
 For example:
@@ -1452,9 +1456,9 @@ For example:
 .nf
 .sp .5
 \f(CW
-sushi.1372a > wrl.nfs:
+sushi.1023 > wrl.nfs: NFS request xid 79658
 	148 read fh 21,11/12.195 8192 bytes @ 24576
-wrl.nfs > sushi.1372a:
+wrl.nfs > sushi.1023: NFS reply xid 79658
 	reply ok 1472 read REG 100664 ids 417/0 sz 29388
 \fP
 .sp .5
@@ -1757,7 +1761,7 @@ Ethernet interface removed the packet from the wire and when the kernel
 serviced the `new packet' interrupt.
 .SH "SEE ALSO"
 stty(1), pcap(3PCAP), bpf(4), nit(4P), pcap-savefile(@MAN_FILE_FORMATS@),
-pcap-filter(@MAN_MISC_INFO@), pcap-tstamp-type(@MAN_MISC_INFO@)
+pcap-filter(@MAN_MISC_INFO@), pcap-tstamp(@MAN_MISC_INFO@)
 .LP
 .RS
 .I http://www.iana.org/assignments/media-types/application/vnd.tcpdump.pcap

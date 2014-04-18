@@ -1,4 +1,3 @@
-/* @(#) $Header: /tcpdump/master/tcpdump/ip.h,v 1.12 2007-09-14 01:29:28 guy Exp $ (LBL) */
 /*
  * Copyright (c) 1982, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -33,6 +32,9 @@
  *
  *	@(#)ip.h	8.2 (Berkeley) 6/1/94
  */
+
+#ifndef TCPDUMP_IP_H
+#define TCPDUMP_IP_H
 
 /*
  * Definitions for internet protocol version 4.
@@ -159,6 +161,4 @@ struct	ip_timestamp {
 #define	IPTTLDEC	1		/* subtracted when forwarding */
 
 #define	IP_MSS		576		/* default maximum segment size */
-
-/* in print-ip.c */
-extern int nextproto4_cksum(const struct ip *, const u_int8_t *, u_int, u_int);
+#endif /* TCPDUMP_IP_H */

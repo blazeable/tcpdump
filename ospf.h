@@ -1,4 +1,3 @@
-/* @(#) $Header: /tcpdump/master/tcpdump/ospf.h,v 1.23 2007-10-08 07:53:21 hannes Exp $ (LBL) */
 /*
  * Copyright (c) 1991, 1993, 1994, 1995, 1996, 1997
  *	The Regents of the University of California.  All rights reserved.
@@ -35,7 +34,7 @@
  * +------------------------------------+
  *
  */
-                
+
 #define OSPF_OPTION_T	0x01	/* T bit: TOS support	*/
 #define OSPF_OPTION_E	0x02	/* E bit: External routes advertised	*/
 #define	OSPF_OPTION_MC	0x04	/* MC bit: Multicast capable */
@@ -137,6 +136,8 @@
 #define	MCLA_VERTEX_NETWORK	2
 
 /* Link-Local-Signaling */
+#define OSPF_LLS_HDRLEN         4U /* RFC5613 Section 2.2 */
+
 #define OSPF_LLS_EO             1  /* RFC4811, RFC4812 */
 #define OSPF_LLS_MD5            2  /* RFC4813 */
 
@@ -322,7 +323,3 @@ struct ospfhdr {
 #define	ospf_lsr	ospf_un.un_lsr
 #define	ospf_lsu	ospf_un.un_lsu
 #define	ospf_lsa	ospf_un.un_lsa
-
-/* Functions shared by ospf and ospf6 */
-extern int ospf_print_te_lsa(const u_int8_t *, u_int);
-extern int ospf_print_grace_lsa(const u_int8_t *, u_int);

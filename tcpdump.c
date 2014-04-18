@@ -29,8 +29,6 @@
 static const char copyright[] _U_ =
     "@(#) Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 2000\n\
 The Regents of the University of California.  All rights reserved.\n";
-static const char rcsid[] _U_ =
-    "@(#) $Header: /tcpdump/master/tcpdump/tcpdump.c,v 1.283 2008-09-25 21:45:50 guy Exp $ (LBL)";
 #endif
 
 /*
@@ -100,13 +98,14 @@ extern int SIZE_BUF;
 netdissect_options Gndo;
 netdissect_options *gndo = &Gndo;
 
+static int Dflag;			/* list available devices and exit */
 static int dflag;			/* print filter code */
 static int Lflag;			/* list available data link types and exit */
 #ifdef HAVE_PCAP_SET_TSTAMP_TYPE
 static int Jflag;			/* list available time stamp types */
 #endif
 #ifdef HAVE_PCAP_SETDIRECTION
-int Pflag = -1;	/* Restrict captured packet by sent/receive direction */
+int Qflag = -1;				/* restrict captured packet by send/receive direction */
 #endif
 static char *zflag = NULL;		/* compress each savefile using a specified command (like gzip or bzip2) */
 
@@ -129,8 +128,16 @@ static void dump_packet_and_trunc(u_char *, const struct pcap_pkthdr *, const u_
 static void dump_packet(u_char *, const struct pcap_pkthdr *, const u_char *);
 static void droproot(const char *, const char *);
 static void ndo_error(netdissect_options *ndo, const char *fmt, ...)
-     __attribute__ ((noreturn, format (printf, 2, 3)));
-static void ndo_warning(netdissect_options *ndo, const char *fmt, ...);
+     __attribute__((noreturn))
+#ifdef __ATTRIBUTE___FORMAT_OK
+     __attribute__((format (printf, 2, 3)))
+#endif /* __ATTRIBUTE___FORMAT_OK */
+    ;
+static void ndo_warning(netdissect_options *ndo, const char *fmt, ...)
+#ifdef __ATTRIBUTE___FORMAT_OK
+     __attribute__((format (printf, 2, 3)))
+#endif /* __ATTRIBUTE___FORMAT_OK */
+    ;
 
 #ifdef SIGNAL_REQ_INFO
 RETSIGTYPE requestinfo(int);
@@ -159,14 +166,32 @@ struct ndo_printer {
 };
 
 
-static struct printer printers[] = {
-	{ arcnet_if_print,	DLT_ARCNET },
-#ifdef DLT_ARCNET_LINUX
-	{ arcnet_linux_if_print, DLT_ARCNET_LINUX },
+static const struct printer printers[] = {
+	{ NULL,			0 },
+};
+
+static const struct ndo_printer ndo_printers[] = {
+	{ ether_if_print,	DLT_EN10MB },
+#ifdef DLT_IPNET
+	{ ipnet_if_print,	DLT_IPNET },
 #endif
-	{ token_if_print,	DLT_IEEE802 },
-#ifdef DLT_LANE8023
-	{ lane_if_print,        DLT_LANE8023 },
+#ifdef DLT_IEEE802_15_4
+	{ ieee802_15_4_if_print, DLT_IEEE802_15_4 },
+#endif
+#ifdef DLT_IEEE802_15_4_NOFCS
+	{ ieee802_15_4_if_print, DLT_IEEE802_15_4_NOFCS },
+#endif
+#ifdef DLT_PPI
+	{ ppi_if_print,		DLT_PPI },
+#endif
+#ifdef DLT_NETANALYZER
+	{ netanalyzer_if_print, DLT_NETANALYZER },
+#endif
+#ifdef DLT_NETANALYZER_TRANSPARENT
+	{ netanalyzer_transparent_if_print, DLT_NETANALYZER_TRANSPARENT },
+#endif
+#if defined(DLT_NFLOG) && defined(HAVE_PCAP_NFLOG_H)
+	{ nflog_if_print,	DLT_NFLOG},
 #endif
 #ifdef DLT_CIP
 	{ cip_if_print,         DLT_CIP },
@@ -174,47 +199,60 @@ static struct printer printers[] = {
 #ifdef DLT_ATM_CLIP
 	{ cip_if_print,		DLT_ATM_CLIP },
 #endif
-	{ sl_if_print,		DLT_SLIP },
-#ifdef DLT_SLIP_BSDOS
-	{ sl_bsdos_if_print,	DLT_SLIP_BSDOS },
+#ifdef DLT_IP_OVER_FC
+	{ ipfc_if_print,	DLT_IP_OVER_FC },
 #endif
-	{ ppp_if_print,		DLT_PPP },
-#ifdef DLT_PPP_WITHDIRECTION
-	{ ppp_if_print,		DLT_PPP_WITHDIRECTION },
-#endif
-#ifdef DLT_PPP_BSDOS
-	{ ppp_bsdos_if_print,	DLT_PPP_BSDOS },
-#endif
-	{ fddi_if_print,	DLT_FDDI },
 	{ null_if_print,	DLT_NULL },
 #ifdef DLT_LOOP
 	{ null_if_print,	DLT_LOOP },
 #endif
+#ifdef DLT_APPLE_IP_OVER_IEEE1394
+	{ ap1394_if_print,	DLT_APPLE_IP_OVER_IEEE1394 },
+#endif
+#if defined(DLT_BLUETOOTH_HCI_H4_WITH_PHDR) && defined(HAVE_PCAP_BLUETOOTH_H)
+	{ bt_if_print,		DLT_BLUETOOTH_HCI_H4_WITH_PHDR},
+#endif
+#ifdef DLT_LANE8023
+	{ lane_if_print,        DLT_LANE8023 },
+#endif
+	{ arcnet_if_print,	DLT_ARCNET },
+#ifdef DLT_ARCNET_LINUX
+	{ arcnet_linux_if_print, DLT_ARCNET_LINUX },
+#endif
 	{ raw_if_print,		DLT_RAW },
-	{ atm_if_print,		DLT_ATM_RFC1483 },
+#ifdef DLT_IPV4
+	{ raw_if_print,		DLT_IPV4 },
+#endif
+#ifdef DLT_IPV6
+	{ raw_if_print,		DLT_IPV6 },
+#endif
+#ifdef HAVE_PCAP_USB_H
+#ifdef DLT_USB_LINUX
+	{ usb_linux_48_byte_print, DLT_USB_LINUX},
+#endif /* DLT_USB_LINUX */
+#ifdef DLT_USB_LINUX_MMAPPED
+	{ usb_linux_64_byte_print, DLT_USB_LINUX_MMAPPED},
+#endif /* DLT_USB_LINUX_MMAPPED */
+#endif /* HAVE_PCAP_USB_H */
+#ifdef DLT_SYMANTEC_FIREWALL
+	{ symantec_if_print,	DLT_SYMANTEC_FIREWALL },
+#endif
 #ifdef DLT_C_HDLC
 	{ chdlc_if_print,	DLT_C_HDLC },
 #endif
 #ifdef DLT_HDLC
 	{ chdlc_if_print,	DLT_HDLC },
 #endif
-#ifdef DLT_PPP_SERIAL
-	{ ppp_hdlc_if_print,	DLT_PPP_SERIAL },
-#endif
 #ifdef DLT_PPP_ETHER
 	{ pppoe_if_print,	DLT_PPP_ETHER },
 #endif
-#ifdef DLT_LINUX_SLL
-	{ sll_if_print,		DLT_LINUX_SLL },
-#endif
-#ifdef DLT_IEEE802_11
-	{ ieee802_11_if_print,	DLT_IEEE802_11},
-#endif
-#ifdef DLT_LTALK
-	{ ltalk_if_print,	DLT_LTALK },
-#endif
 #if defined(DLT_PFLOG) && defined(HAVE_NET_PFVAR_H)
 	{ pflog_if_print,	DLT_PFLOG },
+#endif
+	{ token_if_print,	DLT_IEEE802 },
+	{ fddi_if_print,	DLT_FDDI },
+#ifdef DLT_LINUX_SLL
+	{ sll_if_print,		DLT_LINUX_SLL },
 #endif
 #ifdef DLT_FR
 	{ fr_if_print,		DLT_FR },
@@ -222,29 +260,22 @@ static struct printer printers[] = {
 #ifdef DLT_FRELAY
 	{ fr_if_print,		DLT_FRELAY },
 #endif
+#ifdef DLT_MFR
+	{ mfr_if_print,		DLT_MFR },
+#endif
+	{ atm_if_print,		DLT_ATM_RFC1483 },
 #ifdef DLT_SUNATM
 	{ sunatm_if_print,	DLT_SUNATM },
-#endif
-#ifdef DLT_IP_OVER_FC
-	{ ipfc_if_print,	DLT_IP_OVER_FC },
-#endif
-#ifdef DLT_PRISM_HEADER
-	{ prism_if_print,	DLT_PRISM_HEADER },
-#endif
-#ifdef DLT_IEEE802_11_RADIO
-	{ ieee802_11_radio_if_print,	DLT_IEEE802_11_RADIO },
 #endif
 #ifdef DLT_ENC
 	{ enc_if_print,		DLT_ENC },
 #endif
-#ifdef DLT_SYMANTEC_FIREWALL
-	{ symantec_if_print,	DLT_SYMANTEC_FIREWALL },
+	{ sl_if_print,		DLT_SLIP },
+#ifdef DLT_SLIP_BSDOS
+	{ sl_bsdos_if_print,	DLT_SLIP_BSDOS },
 #endif
-#ifdef DLT_APPLE_IP_OVER_IEEE1394
-	{ ap1394_if_print,	DLT_APPLE_IP_OVER_IEEE1394 },
-#endif
-#ifdef DLT_IEEE802_11_RADIO_AVS
-	{ ieee802_11_radio_avs_if_print,	DLT_IEEE802_11_RADIO_AVS },
+#ifdef DLT_LTALK
+	{ ltalk_if_print,	DLT_LTALK },
 #endif
 #ifdef DLT_JUNIPER_ATM1
 	{ juniper_atm1_print,	DLT_JUNIPER_ATM1 },
@@ -291,59 +322,49 @@ static struct printer printers[] = {
 #ifdef DLT_JUNIPER_CHDLC
 	{ juniper_chdlc_print,	DLT_JUNIPER_CHDLC },
 #endif
-#ifdef DLT_MFR
-	{ mfr_if_print,		DLT_MFR },
+#ifdef DLT_PKTAP
+	{ pktap_if_print,	DLT_PKTAP },
 #endif
-#if defined(DLT_BLUETOOTH_HCI_H4_WITH_PHDR) && defined(HAVE_PCAP_BLUETOOTH_H)
-	{ bt_if_print,		DLT_BLUETOOTH_HCI_H4_WITH_PHDR},
+#ifdef DLT_IEEE802_11_RADIO
+	{ ieee802_11_radio_if_print,	DLT_IEEE802_11_RADIO },
 #endif
-#ifdef HAVE_PCAP_USB_H
-#ifdef DLT_USB_LINUX
-	{ usb_linux_48_byte_print, DLT_USB_LINUX},
-#endif /* DLT_USB_LINUX */
-#ifdef DLT_USB_LINUX_MMAPPED
-	{ usb_linux_64_byte_print, DLT_USB_LINUX_MMAPPED},
-#endif /* DLT_USB_LINUX_MMAPPED */
-#endif /* HAVE_PCAP_USB_H */
-#ifdef DLT_IPV4
-	{ raw_if_print,		DLT_IPV4 },
+#ifdef DLT_IEEE802_11
+	{ ieee802_11_if_print,	DLT_IEEE802_11},
 #endif
-#ifdef DLT_IPV6
-	{ raw_if_print,		DLT_IPV6 },
+#ifdef DLT_IEEE802_11_RADIO_AVS
+	{ ieee802_11_radio_avs_if_print,	DLT_IEEE802_11_RADIO_AVS },
+#endif
+#ifdef DLT_PRISM_HEADER
+	{ prism_if_print,	DLT_PRISM_HEADER },
+#endif
+	{ ppp_if_print,		DLT_PPP },
+#ifdef DLT_PPP_WITHDIRECTION
+	{ ppp_if_print,		DLT_PPP_WITHDIRECTION },
+#endif
+#ifdef DLT_PPP_BSDOS
+	{ ppp_bsdos_if_print,	DLT_PPP_BSDOS },
+#endif
+#ifdef DLT_PPP_SERIAL
+	{ ppp_hdlc_if_print,	DLT_PPP_SERIAL },
 #endif
 	{ NULL,			0 },
 };
 
-static struct ndo_printer ndo_printers[] = {
-	{ ether_if_print,	DLT_EN10MB },
-#ifdef DLT_IPNET
-	{ ipnet_if_print,	DLT_IPNET },
+static const struct tok status_flags[] = {
+#ifdef PCAP_IF_UP
+	{ PCAP_IF_UP,       "Up"       },
 #endif
-#ifdef DLT_IEEE802_15_4
-	{ ieee802_15_4_if_print, DLT_IEEE802_15_4 },
+#ifdef PCAP_IF_RUNNING
+	{ PCAP_IF_RUNNING,  "Running"  },
 #endif
-#ifdef DLT_IEEE802_15_4_NOFCS
-	{ ieee802_15_4_if_print, DLT_IEEE802_15_4_NOFCS },
-#endif
-#ifdef DLT_PPI
-	{ ppi_if_print,		DLT_PPI },
-#endif
-#ifdef DLT_NETANALYZER
-	{ netanalyzer_if_print, DLT_NETANALYZER },
-#endif
-#ifdef DLT_NETANALYZER_TRANSPARENT
-	{ netanalyzer_transparent_if_print, DLT_NETANALYZER_TRANSPARENT },
-#endif
-#ifdef DLT_NFLOG
-	{ nflog_if_print,	DLT_NFLOG},
-#endif
-	{ NULL,			0 },
+	{ PCAP_IF_LOOPBACK, "Loopback" },
+	{ 0, NULL }
 };
 
 if_printer
 lookup_printer(int type)
 {
-	struct printer *p;
+	const struct printer *p;
 
 	for (p = printers; p->f; ++p)
 		if (type == p->type)
@@ -356,11 +377,35 @@ lookup_printer(int type)
 if_ndo_printer
 lookup_ndo_printer(int type)
 {
-	struct ndo_printer *p;
+	const struct ndo_printer *p;
 
 	for (p = ndo_printers; p->f; ++p)
 		if (type == p->type)
 			return p->f;
+
+#if defined(DLT_USER2) && defined(DLT_PKTAP)
+	/*
+	 * Apple incorrectly chose to use DLT_USER2 for their PKTAP
+	 * header.
+	 *
+	 * We map DLT_PKTAP, whether it's DLT_USER2 as it is on Darwin-
+	 * based OSes or the same value as LINKTYPE_PKTAP as it is on
+	 * other OSes, to LINKTYPE_PKTAP, so files written with
+	 * this version of libpcap for a DLT_PKTAP capture have a link-
+	 * layer header type of LINKTYPE_PKTAP.
+	 *
+	 * However, files written on OS X Mavericks for a DLT_PKTAP
+	 * capture have a link-layer header type of LINKTYPE_USER2.
+	 * If we don't have a printer for DLT_USER2, and type is
+	 * DLT_USER2, we look up the printer for DLT_PKTAP and use
+	 * that.
+	 */
+	if (type == DLT_USER2) {
+		for (p = ndo_printers; p->f; ++p)
+			if (DLT_PKTAP == p->type)
+				return p->f;
+	}
+#endif
 
 	return NULL;
 	/* NOTREACHED */
@@ -477,6 +522,31 @@ show_dlts_and_exit(const char *device, pcap_t *pd)
 	exit(0);
 }
 
+#ifdef HAVE_PCAP_FINDALLDEVS
+static void
+show_devices_and_exit (void)
+{
+	pcap_if_t *devpointer;
+	char ebuf[PCAP_ERRBUF_SIZE];
+	int i;
+
+	if (pcap_findalldevs(&devpointer, ebuf) < 0)
+		error("%s", ebuf);
+	else {
+		for (i = 0; devpointer != NULL; i++) {
+			printf("%d.%s", i+1, devpointer->name);
+			if (devpointer->description != NULL)
+				printf(" (%s)", devpointer->description);
+			if (devpointer->flags != 0)
+				printf(" [%s]", bittok2str(status_flags, "none", devpointer->flags));
+			printf("\n");
+			devpointer = devpointer->next;
+		}
+	}
+	exit(0);
+}
+#endif /* HAVE_PCAP_FINDALLDEVS */
+
 /*
  * Set up flags that might or might not be supported depending on the
  * version of libpcap we're using.
@@ -524,9 +594,9 @@ show_dlts_and_exit(const char *device, pcap_t *pd)
 #endif
 
 #ifdef HAVE_PCAP_SETDIRECTION
-#define P_FLAG "P:"
+#define Q_FLAG "Q:"
 #else
-#define P_FLAG
+#define Q_FLAG
 #endif
 
 #ifndef WIN32
@@ -540,7 +610,7 @@ droproot(const char *username, const char *chroot_dir)
 		fprintf(stderr, "tcpdump: Chroot without dropping root is insecure\n");
 		exit(1);
 	}
-	
+
 	pw = getpwnam(username);
 	if (pw) {
 		if (chroot_dir) {
@@ -566,7 +636,7 @@ droproot(const char *username, const char *chroot_dir)
 		if (initgroups(pw->pw_name, pw->pw_gid) != 0 ||
 		    setgid(pw->pw_gid) != 0 || setuid(pw->pw_uid) != 0) {
 			fprintf(stderr, "tcpdump: Couldn't change to '%.32s' uid=%lu gid=%lu: %s\n",
-			    username, 
+			    username,
 			    (unsigned long)pw->pw_uid,
 			    (unsigned long)pw->pw_gid,
 			    pcap_strerror(errno));
@@ -633,7 +703,7 @@ MakeFilename(char *buffer, char *orig_name, int cnt, int max_chars)
 static int tcpdump_printf(netdissect_options *ndo _U_,
 			  const char *fmt, ...)
 {
-  
+
   va_list args;
   int ret;
 
@@ -686,7 +756,7 @@ int
 main(int argc, char **argv)
 {
 	register int cnt, op, i;
-	bpf_u_int32 localnet, netmask;
+	bpf_u_int32 localnet =0 , netmask = 0;
 	register char *cp, *infile, *cmdbuf, *device, *RFileName, *VFileName, *WFileName;
 	pcap_handler callback;
 	int type;
@@ -725,7 +795,7 @@ main(int argc, char **argv)
 	gndo->ndo_error=ndo_error;
 	gndo->ndo_warning=ndo_warning;
 	gndo->ndo_snaplen = DEFAULT_SNAPLEN;
-  
+
 	cnt = -1;
 	device = NULL;
 	infile = NULL;
@@ -747,7 +817,7 @@ main(int argc, char **argv)
 #endif
 
 	while (
-	    (op = getopt(argc, argv, "aAb" B_FLAG "c:C:d" D_FLAG "eE:fF:G:hHi:" I_FLAG j_FLAG J_FLAG "KlLm:M:nNOp" P_FLAG "qr:Rs:StT:u" U_FLAG "vV:w:W:xXy:Yz:Z:")) != -1)
+	    (op = getopt(argc, argv, "aAb" B_FLAG "c:C:d" D_FLAG "eE:fF:G:hHi:" I_FLAG j_FLAG J_FLAG "KlLm:M:nNOpq" Q_FLAG "r:Rs:StT:u" U_FLAG "vV:w:W:xXy:Yz:Z:")) != -1)
 		switch (op) {
 
 		case 'a':
@@ -786,21 +856,9 @@ main(int argc, char **argv)
 			++dflag;
 			break;
 
-#ifdef HAVE_PCAP_FINDALLDEVS
 		case 'D':
-			if (pcap_findalldevs(&devpointer, ebuf) < 0)
-				error("%s", ebuf);
-			else {
-				for (i = 0; devpointer != 0; i++) {
-					printf("%d.%s", i+1, devpointer->name);
-					if (devpointer->description != NULL)
-						printf(" (%s)", devpointer->description);
-					printf("\n");
-					devpointer = devpointer->next;
-				}
-			}
-			return 0;
-#endif /* HAVE_PCAP_FINDALLDEVS */
+			Dflag++;
+			break;
 
 		case 'L':
 			Lflag++;
@@ -851,7 +909,7 @@ main(int argc, char **argv)
 		case 'i':
 			if (optarg[0] == '0' && optarg[1] == 0)
 				error("Invalid adapter index");
-			
+
 #ifdef HAVE_PCAP_FINDALLDEVS
 			/*
 			 * If the argument is a number, treat it as
@@ -969,22 +1027,24 @@ main(int argc, char **argv)
 		case 'p':
 			++pflag;
 			break;
-#ifdef HAVE_PCAP_SETDIRECTION
-		case 'P':
-			if (strcasecmp(optarg, "in") == 0)
-				Pflag = PCAP_D_IN;
-			else if (strcasecmp(optarg, "out") == 0)
-				Pflag = PCAP_D_OUT;
-			else if (strcasecmp(optarg, "inout") == 0)
-				Pflag = PCAP_D_INOUT;
-			else
-				error("unknown capture direction `%s'", optarg);
-			break;
-#endif /* HAVE_PCAP_SETDIRECTION */
+
 		case 'q':
 			++qflag;
 			++suppress_default_print;
 			break;
+
+#ifdef HAVE_PCAP_SETDIRECTION
+		case 'Q':
+			if (strcasecmp(optarg, "in") == 0)
+				Qflag = PCAP_D_IN;
+			else if (strcasecmp(optarg, "out") == 0)
+				Qflag = PCAP_D_OUT;
+			else if (strcasecmp(optarg, "inout") == 0)
+				Qflag = PCAP_D_INOUT;
+			else
+				error("unknown capture direction `%s'", optarg);
+			break;
+#endif /* HAVE_PCAP_SETDIRECTION */
 
 		case 'r':
 			RFileName = optarg;
@@ -1072,7 +1132,7 @@ main(int argc, char **argv)
 
 		case 'W':
 			Wflag = atoi(optarg);
-			if (Wflag < 0) 
+			if (Wflag < 0)
 				error("invalid number of output files %s", optarg);
 			WflagChars = getWflagChars(Wflag);
 			break;
@@ -1110,28 +1170,22 @@ main(int argc, char **argv)
 			break;
 #endif
 		case 'z':
-			if (optarg) {
-				zflag = strdup(optarg);
-			} else {
-				usage();
-				/* NOTREACHED */
-			}
+			zflag = strdup(optarg);
 			break;
 
 		case 'Z':
-			if (optarg) {
-				username = strdup(optarg);
-			}
-			else {
-				usage();
-				/* NOTREACHED */
-			}
+			username = strdup(optarg);
 			break;
 
 		default:
 			usage();
 			/* NOTREACHED */
 		}
+
+#ifdef HAVE_PCAP_FINDALLDEVS
+	if (Dflag)
+		show_devices_and_exit();
+#endif
 
 	switch (tflag) {
 
@@ -1169,7 +1223,7 @@ main(int argc, char **argv)
 #ifdef WITH_USER
 	/* if run as root, prepare for dropping root privileges */
 	if (getuid() == 0 || geteuid() == 0) {
-		/* Run with '-Z root' to restore old behaviour */ 
+		/* Run with '-Z root' to restore old behaviour */
 		if (!username)
 			username = WITH_USER;
 	}
@@ -1227,8 +1281,6 @@ main(int argc, char **argv)
 			    RFileName, dlt_name,
 			    pcap_datalink_val_to_description(dlt));
 		}
-		localnet = 0;
-		netmask = 0;
 	} else {
 		/*
 		 * We're doing a live capture.
@@ -1252,7 +1304,7 @@ main(int argc, char **argv)
 			fprintf(stderr, "%s: listening on %s\n", program_name, device);
 		}
 
-		fflush(stderr);	
+		fflush(stderr);
 #endif /* WIN32 */
 #ifdef HAVE_PCAP_CREATE
 		pd = pcap_create(device, ebuf);
@@ -1334,13 +1386,13 @@ main(int argc, char **argv)
 				    pcap_statustostr(status));
 		}
 #ifdef HAVE_PCAP_SETDIRECTION
-		if (Pflag != -1) {
-			status = pcap_setdirection(pd, Pflag);
+		if (Qflag != -1) {
+			status = pcap_setdirection(pd, Qflag);
 			if (status != 0)
 				error("%s: pcap_setdirection() failed: %s",
 				      device,  pcap_geterr(pd));
 		}
-#endif
+#endif /* HAVE_PCAP_SETDIRECTION */
 #else
 		*ebuf = '\0';
 		pd = pcap_open_live(device, snaplen, !pflag, 1000, ebuf);
@@ -1388,11 +1440,12 @@ main(int argc, char **argv)
 			warning("snaplen raised from %d to %d", snaplen, i);
 			snaplen = i;
 		}
-		if (pcap_lookupnet(device, &localnet, &netmask, ebuf) < 0) {
-			localnet = 0;
-			netmask = 0;
-			warning("%s", ebuf);
-		}
+                if(fflag != 0) {
+                        if (pcap_lookupnet(device, &localnet, &netmask, ebuf) < 0) {
+                                warning("foreign (-f) flag used but: %s", ebuf);
+                        }
+                }
+
 	}
 	if (infile)
 		cmdbuf = read_infile(infile);
@@ -1407,10 +1460,10 @@ main(int argc, char **argv)
 		free(cmdbuf);
 		exit(0);
 	}
-	init_addrtoname(localnet, netmask);
+	init_addrtoname(gndo, localnet, netmask);
         init_checksum();
 
-#ifndef WIN32	
+#ifndef WIN32
 	(void)setsignal(SIGPIPE, cleanup);
 	(void)setsignal(SIGTERM, cleanup);
 	(void)setsignal(SIGINT, cleanup);
@@ -1419,7 +1472,7 @@ main(int argc, char **argv)
 	(void)setsignal(SIGCHLD, child_cleanup);
 #endif
 	/* Cooperate with nohup(1) */
-#ifndef WIN32	
+#ifndef WIN32
 	if ((oldhandler = setsignal(SIGHUP, cleanup)) != SIG_DFL)
 		(void)setsignal(SIGHUP, oldhandler);
 #endif /* WIN32 */
@@ -1840,6 +1893,13 @@ dump_packet_and_trunc(u_char *user, const struct pcap_pkthdr *h, const u_char *s
 			if (dump_info->CurrentFileName == NULL)
 				error("dump_packet_and_trunc: malloc");
 			/*
+			 * Gflag was set otherwise we wouldn't be here. Reset the count
+			 * so multiple files would end with 1,2,3 in the filename.
+			 * The counting is handled with the -C flow after this.
+			 */
+			Cflag_count = 0;
+
+			/*
 			 * This is always the first file in the Cflag
 			 * rotation: e.g. 0
 			 * We also don't need numbering if Cflag is not set.
@@ -1931,36 +1991,38 @@ print_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *sp)
 {
 	struct print_info *print_info;
 	u_int hdrlen;
+        netdissect_options *ndo;
 
 	++packets_captured;
 
 	++infodelay;
-	ts_print(&h->ts);
 
 	print_info = (struct print_info *)user;
+        ndo = print_info->ndo;
+	ts_print(ndo, &h->ts);
 
 	/*
 	 * Some printers want to check that they're not walking off the
 	 * end of the packet.
 	 * Rather than pass it all the way down, we set this global.
 	 */
-	snapend = sp + h->caplen;
+	ndo->ndo_snapend = sp + h->caplen;
 
         if(print_info->ndo_type) {
                 hdrlen = (*print_info->p.ndo_printer)(print_info->ndo, h, sp);
         } else {
                 hdrlen = (*print_info->p.printer)(h, sp);
         }
-                
-	if (Xflag) {
+
+	if (ndo->ndo_Xflag) {
 		/*
 		 * Print the raw packet data in hex and ASCII.
 		 */
-		if (Xflag > 1) {
+		if (ndo->ndo_Xflag > 1) {
 			/*
 			 * Include the link-layer header.
 			 */
-			hex_and_ascii_print("\n\t", sp, h->caplen);
+			hex_and_ascii_print(ndo, "\n\t", sp, h->caplen);
 		} else {
 			/*
 			 * Don't include the link-layer header - and if
@@ -1968,18 +2030,18 @@ print_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *sp)
 			 * print nothing.
 			 */
 			if (h->caplen > hdrlen)
-				hex_and_ascii_print("\n\t", sp + hdrlen,
+				hex_and_ascii_print(ndo, "\n\t", sp + hdrlen,
 				    h->caplen - hdrlen);
 		}
-	} else if (xflag) {
+	} else if (ndo->ndo_xflag) {
 		/*
 		 * Print the raw packet data in hex.
 		 */
-		if (xflag > 1) {
+		if (ndo->ndo_xflag > 1) {
 			/*
 			 * Include the link-layer header.
 			 */
-			hex_print("\n\t", sp, h->caplen);
+                        hex_print(ndo, "\n\t", sp, h->caplen);
 		} else {
 			/*
 			 * Don't include the link-layer header - and if
@@ -1987,18 +2049,18 @@ print_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *sp)
 			 * print nothing.
 			 */
 			if (h->caplen > hdrlen)
-				hex_print("\n\t", sp + hdrlen,
-				    h->caplen - hdrlen);
+				hex_print(ndo, "\n\t", sp + hdrlen,
+                                          h->caplen - hdrlen);
 		}
-	} else if (Aflag) {
+	} else if (ndo->ndo_Aflag) {
 		/*
 		 * Print the raw packet data in ASCII.
 		 */
-		if (Aflag > 1) {
+		if (ndo->ndo_Aflag > 1) {
 			/*
 			 * Include the link-layer header.
 			 */
-			ascii_print(sp, h->caplen);
+			ascii_print(ndo, sp, h->caplen);
 		} else {
 			/*
 			 * Don't include the link-layer header - and if
@@ -2006,7 +2068,7 @@ print_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *sp)
 			 * print nothing.
 			 */
 			if (h->caplen > hdrlen)
-				ascii_print(sp + hdrlen, h->caplen - hdrlen);
+				ascii_print(ndo, sp + hdrlen, h->caplen - hdrlen);
 		}
 	}
 
@@ -2036,11 +2098,11 @@ print_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *sp)
 	 * version number of the Packet.dll code, to supply the
 	 * "Wpcap_version" information on Windows.
 	 */
-	char WDversion[]="current-cvs.tcpdump.org";
+	char WDversion[]="current-git.tcpdump.org";
 #if !defined(HAVE_GENERATED_VERSION)
-	char version[]="current-cvs.tcpdump.org";
+	char version[]="current-git.tcpdump.org";
 #endif
-	char pcap_version[]="current-cvs.tcpdump.org";
+	char pcap_version[]="current-git.tcpdump.org";
 	char Wpcap_version[]="3.1";
 #endif
 
@@ -2048,9 +2110,9 @@ print_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *sp)
  * By default, print the specified data out in hex and ASCII.
  */
 static void
-ndo_default_print(netdissect_options *ndo _U_, const u_char *bp, u_int length)
+ndo_default_print(netdissect_options *ndo, const u_char *bp, u_int length)
 {
-	hex_and_ascii_print("\n\t", bp, length); /* pass on lf and identation string */
+	hex_and_ascii_print(ndo, "\n\t", bp, length); /* pass on lf and identation string */
 }
 
 void
@@ -2128,7 +2190,7 @@ usage(void)
 "\t\t[ -i interface ]" j_FLAG_USAGE " [ -M secret ]\n");
 #ifdef HAVE_PCAP_SETDIRECTION
 	(void)fprintf(stderr,
-"\t\t[ -P in|out|inout ]\n");
+"\t\t[ -Q in|out|inout ]\n");
 #endif
 	(void)fprintf(stderr,
 "\t\t[ -r file ] [ -s snaplen ] [ -T type ] [ -V file ] [ -w file ]\n");
@@ -2176,3 +2238,9 @@ ndo_warning(netdissect_options *ndo _U_, const char *fmt, ...)
 			(void)fputc('\n', stderr);
 	}
 }
+/*
+ * Local Variables:
+ * c-style: whitesmith
+ * c-basic-offset: 8
+ * End:
+ */

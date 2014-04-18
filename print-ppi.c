@@ -1,24 +1,29 @@
 /*
  * Oracle
  */
+#define NETDISSECT_REWORKED
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
 #include <tcpdump-stdinc.h>
 
-#include <stdio.h>
-#include <pcap.h>
-
-#include "netdissect.h"
 #include "interface.h"
 #include "extract.h"
-#include "ppi.h"
+
+typedef struct ppi_header {
+	uint8_t		ppi_ver;
+	uint8_t		ppi_flags;
+	uint16_t	ppi_len;
+	uint32_t	ppi_dlt;
+} ppi_header_t;
+
+#define	PPI_HDRLEN	8
 
 #ifdef DLT_PPI
 
 static inline void
-ppi_header_print(struct netdissect_options *ndo, const u_char *bp, u_int length)
+ppi_header_print(netdissect_options *ndo, const u_char *bp, u_int length)
 {
 	const ppi_header_t *hdr;
 	u_int32_t dlt;
@@ -41,7 +46,7 @@ ppi_header_print(struct netdissect_options *ndo, const u_char *bp, u_int length)
 }
 
 static void
-ppi_print(struct netdissect_options *ndo,
+ppi_print(netdissect_options *ndo,
                const struct pcap_pkthdr *h, const u_char *p)
 {
 	if_ndo_printer ndo_printer;
@@ -75,7 +80,7 @@ ppi_print(struct netdissect_options *ndo,
 					length + sizeof(ppi_header_t));
 
 		if (!ndo->ndo_suppress_default_print)
-			ndo->ndo_default_print(ndo, p, caplen);
+			ND_DEFAULTPRINT(p, caplen);
 	}
 }
 
@@ -86,7 +91,7 @@ ppi_print(struct netdissect_options *ndo,
  * is the number of bytes actually captured.
  */
 u_int
-ppi_if_print(struct netdissect_options *ndo,
+ppi_if_print(netdissect_options *ndo,
                const struct pcap_pkthdr *h, const u_char *p)
 {
 	ppi_print(ndo, h, p);

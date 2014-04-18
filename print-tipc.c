@@ -19,25 +19,19 @@
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#ifndef lint
-static const char rcsid[] _U_ =
-    "@(#) $Header: /tcpdump/master/tcpdump/print-arp.c,v 1.66 2006-03-03 22:53:21 hannes Exp $ (LBL)";
-#endif
-
+#define NETDISSECT_REWORKED
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
 #include <tcpdump-stdinc.h>
 
-#include <stdio.h>
-#include <string.h>
-
-#include "netdissect.h"
-#include "addrtoname.h"
+#include "interface.h"
 #include "ether.h"
 #include "ethertype.h"
 #include "extract.h"			/* must come after interface.h */
+
+static const char tstr[] = "[|TIPC]";
 
 /*
  * Transparent Inter-Process Communication (TIPC) protocol.
@@ -223,9 +217,9 @@ print_payload(netdissect_options *ndo, const struct payload_tipc_pkthdr *ap)
 	return;
 
 trunc:
-	ND_PRINT((ndo, "[|TIPC]"));
+	ND_PRINT((ndo, "%s", tstr));
 }
-	 
+
 static void
 print_internal(netdissect_options *ndo, const struct internal_tipc_pkthdr *ap)
 {
@@ -291,7 +285,7 @@ print_internal(netdissect_options *ndo, const struct internal_tipc_pkthdr *ap)
 	return;
 
 trunc:
-	ND_PRINT((ndo, "[|TIPC]"));
+	ND_PRINT((ndo, "%s", tstr));
 }
 
 static void
@@ -315,7 +309,6 @@ print_link_conf(netdissect_options *ndo, const struct link_conf_tipc_pkthdr *ap)
 	msize = TIPC_MSIZE(w0);
 	w1 = EXTRACT_32BITS(&ap->w1);
 	mtype = TIPC_MTYPE(w1);
-	prev_node = EXTRACT_32BITS(&ap->prev_node);
 	dest_domain = EXTRACT_32BITS(&ap->dest_domain);
 	prev_node = EXTRACT_32BITS(&ap->prev_node);
 
@@ -338,7 +331,7 @@ print_link_conf(netdissect_options *ndo, const struct link_conf_tipc_pkthdr *ap)
 	return;
 
 trunc:
-	ND_PRINT((ndo, "[|TIPC]"));
+	ND_PRINT((ndo, "%s", tstr));
 }
 
 void
@@ -363,7 +356,7 @@ tipc_print(netdissect_options *ndo, const u_char *bp, u_int length _U_,
 		case TIPC_USER_NAME_DISTRIBUTOR:
 		case TIPC_USER_CONN_MANAGER:
 			print_payload(ndo, (struct payload_tipc_pkthdr *)bp);
-			break;			 
+			break;
 
 		case TIPC_USER_LINK_CONFIG:
 			print_link_conf(ndo, (struct link_conf_tipc_pkthdr *)bp);
@@ -381,7 +374,7 @@ tipc_print(netdissect_options *ndo, const u_char *bp, u_int length _U_,
 	return;
 
 trunc:
-	ND_PRINT((ndo, "[|TIPC]"));
+	ND_PRINT((ndo, "%s", tstr));
 }
 
 /*

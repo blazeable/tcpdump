@@ -26,16 +26,14 @@
  * SUCH DAMAGE.
  */
 
+#define NETDISSECT_REWORKED
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
 #include <tcpdump-stdinc.h>
 
-#include <stdio.h>
-#include <string.h>
-
-#include "netdissect.h"
+#include "interface.h"
 #include "addrtoname.h"
 #include "extract.h"
 
@@ -58,8 +56,8 @@ msnlb_print(netdissect_options *ndo, const u_char *bp)
 
 	ND_PRINT((ndo, "MS NLB heartbeat, host priority: %u,",
 		EXTRACT_LE_32BITS(&(hb->host_prio))));
-	ND_PRINT((ndo, " cluster IP: %s,", ipaddr_string(&(hb->virtual_ip))));
-	ND_PRINT((ndo, " host IP: %s", ipaddr_string(&(hb->host_ip))));
+	ND_PRINT((ndo, " cluster IP: %s,", ipaddr_string(ndo, &(hb->virtual_ip))));
+	ND_PRINT((ndo, " host IP: %s", ipaddr_string(ndo, &(hb->host_ip))));
 	return;
 trunc:
 	ND_PRINT((ndo, "[|MS NLB]"));

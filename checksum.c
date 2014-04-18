@@ -17,11 +17,7 @@
  * Original code by Hannes Gredler (hannes@juniper.net)
  */
 
-#ifndef lint
-static const char rcsid[] _U_ =
-    "@(#) $Header: /tcpdump/master/tcpdump/checksum.c,v 1.4 2006-09-25 09:23:32 hannes Exp $";
-#endif
-
+#define NETDISSECT_REWORKED
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -93,12 +89,12 @@ static const u_int16_t crc10_table[256] =
 
 static void
 init_crc10_table(void)
-{   
+{
 #define CRC10_POLYNOMIAL 0x633
     register int i, j;
     register u_int16_t accum;
     u_int16_t verify_crc10_table[256];
-    
+
     for ( i = 0;  i < 256;  i++ )
     {
         accum = ((unsigned short) i << 2);
@@ -166,14 +162,14 @@ create_osi_cksum (const u_int8_t *pptr, int checksum_offset, int length)
         } else {
             c0 = c0 + *(pptr++);
             c1 += c0;
-        } 
+        }
     }
 
     c0 = c0 % 255;
     c1 = c1 % 255;
 
     mul = (length - checksum_offset)*(c0);
-  
+
     x = mul - c0 - c1;
     y = c1 - mul - 1;
 
@@ -189,6 +185,6 @@ create_osi_cksum (const u_int8_t *pptr, int checksum_offset, int length)
 
     y &= 0x00FF;
     checksum = ((x << 8) | y);
-  
+
     return checksum;
 }

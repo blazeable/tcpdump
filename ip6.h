@@ -1,4 +1,3 @@
-/* @(#) $Header: /tcpdump/master/tcpdump/ip6.h,v 1.8 2007-08-29 02:31:44 mcr Exp $ (LBL) */
 /*	NetBSD: ip6.h,v 1.9 2000/07/13 05:34:21 itojun Exp 	*/
 /*	$KAME: ip6.h,v 1.9 2000/07/02 21:01:32 itojun Exp $	*/
 
@@ -89,6 +88,7 @@ struct ip6_hdr {
 } UNALIGNED;
 
 #define ip6_vfc		ip6_ctlun.ip6_un2_vfc
+#define IP6_VERSION(ip6_hdr)	(((ip6_hdr)->ip6_vfc & 0xf0) >> 4)
 #define ip6_flow	ip6_ctlun.ip6_un1.ip6_un1_flow
 #define ip6_plen	ip6_ctlun.ip6_un1.ip6_un1_plen
 #define ip6_nxt		ip6_ctlun.ip6_un1.ip6_un1_nxt
@@ -127,11 +127,15 @@ struct ip6_dest {
 	/* followed by options */
 } UNALIGNED;
 
+/* http://www.iana.org/assignments/ipv6-parameters/ipv6-parameters.xhtml */
+
 /* Option types and related macros */
 #define IP6OPT_PAD1		0x00	/* 00 0 00000 */
 #define IP6OPT_PADN		0x01	/* 00 0 00001 */
 #define IP6OPT_JUMBO		0xC2	/* 11 0 00010 = 194 */
 #define IP6OPT_JUMBO_LEN	6
+#define IP6OPT_RPL		0x63	/* 01 1 00011 */
+#define IP6OPT_TUN_ENC_LIMIT	0x04	/* 00 0 00100 */
 #define IP6OPT_ROUTER_ALERT	0x05	/* 00 0 00101 */
 
 #define IP6OPT_RTALERT_LEN	4
@@ -140,11 +144,16 @@ struct ip6_dest {
 #define IP6OPT_RTALERT_ACTNET	2 	/* contains an Active Networks msg */
 #define IP6OPT_MINLEN		2
 
-#define IP6OPT_BINDING_UPDATE	0xc6	/* 11 0 00110 */
-#define IP6OPT_BINDING_ACK	0x07	/* 00 0 00111 */
-#define IP6OPT_BINDING_REQ	0x08	/* 00 0 01000 */
+#define IP6OPT_QUICK_START	0x26	/* 00 1 00110 */
+#define IP6OPT_CALIPSO		0x07	/* 00 0 00111 */
+#define IP6OPT_SMF_DPD		0x08	/* 00 0 01000 */
 #define IP6OPT_HOME_ADDRESS	0xc9	/* 11 0 01001 */
+#define IP6OPT_HOMEADDR_MINLEN	18
 #define IP6OPT_EID		0x8a	/* 10 0 01010 */
+#define IP6OPT_ILNP_NOTICE	0x8b	/* 10 0 01011 */
+#define IP6OPT_LINE_ID		0x8c	/* 10 0 01100 */
+#define IP6OPT_MPL		0x6d	/* 01 1 01101 */
+#define IP6OPT_IP_DFF		0xee	/* 11 1 01110 */
 
 #define IP6OPT_TYPE(o)		((o) & 0xC0)
 #define IP6OPT_TYPE_SKIP	0x00
@@ -187,6 +196,6 @@ struct ip6_frag {
 #define IP6F_MORE_FRAG		0x0001	/* more-fragments flag */
 
 /* in print-ip6.c */
-extern int nextproto6_cksum(const struct ip6_hdr *, const u_int8_t *, u_int, u_int);
+extern int nextproto6_cksum(const struct ip6_hdr *, const u_int8_t *, u_int, u_int, u_int);
 
 #endif /* not _NETINET_IP6_H_ */

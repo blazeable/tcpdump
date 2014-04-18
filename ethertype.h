@@ -17,8 +17,6 @@
  * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- *
- * @(#) $Header: /tcpdump/master/tcpdump/ethertype.h,v 1.30 2008-02-06 10:47:53 guy Exp $ (LBL)
  */
 
 /*
@@ -172,7 +170,7 @@
 #define	ETHERTYPE_LOOPBACK	0x9000
 #endif
 #ifndef	ETHERTYPE_VMAN
-#define	ETHERTYPE_VMAN	        0x9100 /* Extreme VMAN Protocol */ 
+#define	ETHERTYPE_VMAN	        0x9100 /* Extreme VMAN Protocol */
 #endif
 #ifndef	ETHERTYPE_CFM_OLD
 #define	ETHERTYPE_CFM_OLD       0xabcd /* 802.1ag depreciated */

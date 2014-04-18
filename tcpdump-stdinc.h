@@ -27,9 +27,6 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *
- * @(#) $Header: /tcpdump/master/tcpdump/tcpdump-stdinc.h,v 1.18 2007-11-24 18:13:33 mcr Exp $ (LBL)
  */
 
 /*
@@ -60,9 +57,6 @@
 #endif
 
 #if !defined(__MINGW32__) && !defined(__WATCOMC__)
-#undef toascii
-#define isascii __isascii
-#define toascii __toascii
 #define stat _stat
 #define open _open
 #define fstat _fstat
@@ -101,10 +95,6 @@ extern int inet_aton (const char *cp, struct in_addr *addr);
 
 #ifndef INET6_ADDRSTRLEN
 #define INET6_ADDRSTRLEN 46
-#endif
-
-#ifndef toascii
-#define toascii(c) ((c) & 0x7f)
 #endif
 
 #ifndef caddr_t
@@ -199,7 +189,7 @@ typedef char* caddr_t;
   #define FOPEN_WRITE_BIN  FOPEN_WRITE_TXT
 #endif
 
-#if defined(__GNUC__) && defined(__i386__) && !defined(__APPLE__) && !defined(__ntohl) 
+#if defined(__GNUC__) && defined(__i386__) && !defined(__APPLE__) && !defined(__ntohl)
   #undef ntohl
   #undef ntohs
   #undef htonl
@@ -287,5 +277,12 @@ typedef char* caddr_t;
 /*
  * end of Apple deprecation workaround macros
  */
+
+#ifndef min
+#define min(a,b) ((a)>(b)?(b):(a))
+#endif
+#ifndef max
+#define max(a,b) ((b)>(a)?(b):(a))
+#endif
 
 #endif /* tcpdump_stdinc_h */
