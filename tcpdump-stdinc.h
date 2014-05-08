@@ -31,8 +31,8 @@
 
 /*
  * Include the appropriate OS header files on Windows and various flavors
- * of UNIX, and also define some additional items and include various
- * non-OS header files on Windows, and; this isolates most of the platform
+ * of UNIX, include various non-OS header files on Windows, and define
+ * various items as needed, to isolate most of tcpdump's platform
  * differences to this one file.
  */
 
@@ -41,35 +41,105 @@
 
 #ifdef WIN32
 
+#include <stdint.h>
 #include <stdio.h>
 #include <winsock2.h>
-#include <Ws2tcpip.h>
-#include "bittypes.h"
+#include <ws2tcpip.h>
+#include "bittypes.h"   /* in wpcap's Win32/include */
 #include <ctype.h>
 #include <time.h>
 #include <io.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <net/netdb.h>  /* in wpcap's Win32/include */
 
-#ifndef NBBY
-#define NBBY	8
+#ifndef uint8_t
+#define uint8_t		unsigned char
 #endif
 
-#if !defined(__MINGW32__) && !defined(__WATCOMC__)
+#ifndef int8_t
+#define int8_t		signed char
+#endif
+
+#ifndef uint16_t
+#define uint16_t	unsigned short
+#endif
+
+#ifndef int16_t
+#define int16_t		signed short
+#endif
+
+#ifndef uint32_t
+#define uint32_t	unsigned int
+#endif
+
+#ifndef int32_t
+#define int32_t		signed int
+#endif
+
+#ifdef _MSC_EXTENSIONS
+
+#ifndef uint64_t
+#define uint64_t	unsigned _int64
+#endif
+
+#ifndef int64_t
+#define int64_t		_int64
+#endif
+
+#ifndef PRId64
+#define PRId64		"I64d"
+#endif
+
+#ifndef PRIo64
+#define PRIo64		"I64o"
+#endif
+
+#ifndef PRIu64
+#define PRIu64		"I64u"
+#endif
+
+#ifndef PRIx64
+#define PRIx64		"I64x"
+#endif
+
+#else /* _MSC_EXTENSIONS */
+
+#ifndef uint64_t
+#define uint64_t	unsigned long long
+#endif
+
+#ifndef int64_t
+#define int64_t		long long
+#endif
+
+#ifndef PRId64
+#define PRId64		"lld"
+#endif
+
+#ifndef PRIo64
+#define PRIo64		"llo"
+#endif
+
+#ifndef PRIu64
+#define PRIu64		"llu"
+#endif
+
+#ifndef PRIx64
+#define PRIx64		"llx"
+#endif
+
+#endif /* _MSC_EXTENSIONS */
+
+#ifdef _MSC_VER
 #define stat _stat
 #define open _open
 #define fstat _fstat
 #define read _read
 #define close _close
 #define O_RDONLY _O_RDONLY
-#endif /* __MINGW32__ */
-
-#ifdef __MINGW32__
-#include <stdint.h>
-#else
-#include "inttypes.h"
-#endif
+#endif  /* _MSC_VER */
 
 /* Protos for missing/x.c functions (ideally <missing/addrinfo.h>
  * should be used, but it clashes with <ws2tcpip.h>).
@@ -97,6 +167,12 @@ extern int inet_aton (const char *cp, struct in_addr *addr);
 #define INET6_ADDRSTRLEN 46
 #endif
 
+/* It is in MSVC's <errno.h>, but not defined in MingW+Watcom.
+ */
+#ifndef EAFNOSUPPORT
+#define EAFNOSUPPORT WSAEAFNOSUPPORT
+#endif
+
 #ifndef caddr_t
 typedef char* caddr_t;
 #endif /* caddr_t */
@@ -114,13 +190,8 @@ typedef char* caddr_t;
 #include <netdb.h>
 #if HAVE_INTTYPES_H
 #include <inttypes.h>
-#else
-#if HAVE_STDINT_H
+#elif HAVE_STDINT_H
 #include <stdint.h>
-#endif
-#endif
-#ifdef HAVE_SYS_BITYPES_H
-#include <sys/bitypes.h>
 #endif
 #include <sys/param.h>
 #include <sys/types.h>			/* concession to AIX */
@@ -171,10 +242,11 @@ typedef char* caddr_t;
  * Note: this also requires that padding be put into the structure,
  * at least for compilers where it's implemented as __attribute__((packed)).
  */
-#if defined(_MSC_VER) && defined(UNALIGNED)
-/* MSVC may have its own macro defined with the same name and purpose. */
-#else
+#if defined(__GNUC__)
+#undef UNALIGNED
 #define UNALIGNED	__attribute__((packed))
+#else
+ /* MSVC may have its own macro defined with the same name and purpose. */
 #endif
 
 #if defined(WIN32) || defined(MSDOS)

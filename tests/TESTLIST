@@ -175,8 +175,11 @@ of10_7050q-v	of10_7050q.pcap		of10_7050q-v.out	-t -v
 # GeoNetworking and CALM FAST tests
 geonet-calm-fast	geonet_and_calm_fast.pcap	geonet_and_calm_fast.out	-t -vv -n
 
-# NFLOG test case
-nflog-e		nflog.pcap		nflog-e.out		-t -e
+# M3UA tests
+m3ua isup.pcap isup.out -t
+m3ua-vv isup.pcap isupvv.out -t -vv
+
+# NFLOG test case moved to nflog-e.sh
 
 # syslog test case
 syslog-v	syslog_udp.pcap		syslog-v.out		-t -v

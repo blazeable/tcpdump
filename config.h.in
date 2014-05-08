@@ -28,6 +28,9 @@
 /* Define to 1 if you have the `getnameinfo' function. */
 #undef HAVE_GETNAMEINFO
 
+/* Define to 1 if you have the `getopt_long' function. */
+#undef HAVE_GETOPT_LONG
+
 /* define if you have getrpcbynumber() */
 #undef HAVE_GETRPCBYNUMBER
 
@@ -184,9 +187,6 @@
 /* Define to 1 if the system has the type `struct ether_addr'. */
 #undef HAVE_STRUCT_ETHER_ADDR
 
-/* Define to 1 if you have the <sys/bitypes.h> header file. */
-#undef HAVE_SYS_BITYPES_H
-
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 
@@ -337,16 +337,16 @@
    a type exists and the standard includes do not define it. */
 #undef int8_t
 
-/* Define to `unsigned short' if u_int16_t not defined. */
+/* Define to `uint16_t' if u_int16_t not defined. */
 #undef u_int16_t
 
-/* Define to `unsigned int' if u_int32_t not defined. */
+/* Define to `uint32_t' if u_int32_t not defined. */
 #undef u_int32_t
 
-/* Define to `unsigned long long' if u_int64_t not defined. */
+/* Define to `uint64_t' if u_int64_t not defined. */
 #undef u_int64_t
 
-/* Define to `unsigned char' if u_int8_t not defined. */
+/* Define to `uint8_t' if u_int8_t not defined. */
 #undef u_int8_t
 
 /* Define to the type of an unsigned integer type of width exactly 16 bits if

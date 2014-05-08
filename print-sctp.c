@@ -154,36 +154,36 @@ static const struct tok sctp_chunkid_str[] = {
 /* the sctp common header */
 
 struct sctpHeader{
-  u_int16_t source;
-  u_int16_t destination;
-  u_int32_t verificationTag;
-  u_int32_t adler32;
+  uint16_t source;
+  uint16_t destination;
+  uint32_t verificationTag;
+  uint32_t adler32;
 };
 
 /* various descriptor parsers */
 
 struct sctpChunkDesc{
-  u_int8_t chunkID;
-  u_int8_t chunkFlg;
-  u_int16_t chunkLength;
+  uint8_t chunkID;
+  uint8_t chunkFlg;
+  uint16_t chunkLength;
 };
 
 struct sctpParamDesc{
-  u_int16_t paramType;
-  u_int16_t paramLength;
+  uint16_t paramType;
+  uint16_t paramLength;
 };
 
 
 struct sctpRelChunkDesc{
   struct sctpChunkDesc chk;
-  u_int32_t serialNumber;
+  uint32_t serialNumber;
 };
 
 struct sctpVendorSpecificParam {
   struct sctpParamDesc p;  /* type must be 0xfffe */
-  u_int32_t vendorId;	   /* vendor ID from RFC 1700 */
-  u_int16_t vendorSpecificType;
-  u_int16_t vendorSpecificLen;
+  uint32_t vendorId;	   /* vendor ID from RFC 1700 */
+  uint16_t vendorSpecificType;
+  uint16_t vendorSpecificLen;
 };
 
 
@@ -195,53 +195,53 @@ struct sctpVendorSpecificParam {
 
 /* this is used for init ack, too */
 struct sctpInitiation{
-  u_int32_t initTag;		/* tag of mine */
-  u_int32_t rcvWindowCredit;	/* rwnd */
-  u_int16_t NumPreopenStreams;	/* OS */
-  u_int16_t MaxInboundStreams;     /* MIS */
-  u_int32_t initialTSN;
+  uint32_t initTag;		/* tag of mine */
+  uint32_t rcvWindowCredit;	/* rwnd */
+  uint16_t NumPreopenStreams;	/* OS */
+  uint16_t MaxInboundStreams;     /* MIS */
+  uint32_t initialTSN;
   /* optional param's follow in sctpParamDesc form */
 };
 
 struct sctpV4IpAddress{
   struct sctpParamDesc p;	/* type is set to SCTP_IPV4_PARAM_TYPE, len=10 */
-  u_int32_t  ipAddress;
+  uint32_t  ipAddress;
 };
 
 
 struct sctpV6IpAddress{
   struct sctpParamDesc p;	/* type is set to SCTP_IPV6_PARAM_TYPE, len=22 */
-  u_int8_t  ipAddress[16];
+  uint8_t  ipAddress[16];
 };
 
 struct sctpDNSName{
   struct sctpParamDesc param;
-  u_int8_t name[1];
+  uint8_t name[1];
 };
 
 
 struct sctpCookiePreserve{
   struct sctpParamDesc p;	/* type is set to SCTP_COOKIE_PRESERVE, len=8 */
-  u_int32_t extraTime;
+  uint32_t extraTime;
 };
 
 
 struct sctpTimeStamp{
-  u_int32_t ts_sec;
-  u_int32_t ts_usec;
+  uint32_t ts_sec;
+  uint32_t ts_usec;
 };
 
 /* wire structure of my cookie */
 struct cookieMessage{
-  u_int32_t TieTag_curTag;		/* copied from assoc if present */
-  u_int32_t TieTag_hisTag; 		/* copied from assoc if present */
+  uint32_t TieTag_curTag;		/* copied from assoc if present */
+  uint32_t TieTag_hisTag; 		/* copied from assoc if present */
   int32_t cookieLife;			/* life I will award this cookie */
   struct sctpTimeStamp timeEnteringState; /* the time I built cookie */
   struct sctpInitiation initAckISent;	/* the INIT-ACK that I sent to my peer */
-  u_int32_t addressWhereISent[4];	/* I make this 4 ints so I get 128bits for future */
+  uint32_t addressWhereISent[4];	/* I make this 4 ints so I get 128bits for future */
   int32_t addrtype;			/* address type */
-  u_int16_t locScope;			/* V6 local scope flag */
-  u_int16_t siteScope;			/* V6 site scope flag */
+  uint16_t locScope;			/* V6 local scope flag */
+  uint16_t siteScope;			/* V6 site scope flag */
   /* at the end is tacked on the INIT chunk sent in
    * its entirety and of course our
    * signature.
@@ -273,15 +273,15 @@ struct sctpSendableInit{
  */
 
 struct sctpSelectiveAck{
-  u_int32_t highestConseqTSN;
-  u_int32_t updatedRwnd;
-  u_int16_t numberOfdesc;
-  u_int16_t numDupTsns;
+  uint32_t highestConseqTSN;
+  uint32_t updatedRwnd;
+  uint16_t numberOfdesc;
+  uint16_t numDupTsns;
 };
 
 struct sctpSelectiveFrag{
-  u_int16_t fragmentStart;
-  u_int16_t fragmentEnd;
+  uint16_t fragmentStart;
+  uint16_t fragmentEnd;
 };
 
 
@@ -295,8 +295,8 @@ struct sctpUnifiedSack{
  */
 
 struct sctpHBrequest {
-  u_int32_t time_value_1;
-  u_int32_t time_value_2;
+  uint32_t time_value_1;
+  uint32_t time_value_2;
 };
 
 /* here is what I read and respond with to. */
@@ -312,7 +312,7 @@ struct sctpHBsender{
   struct sctpParamDesc hb;
   struct sctpHBrequest rtt;
   int8_t addrFmt[SCTP_ADDRMAX];
-  u_int16_t userreq;
+  uint16_t userreq;
 };
 
 
@@ -333,15 +333,15 @@ struct sctpUnifiedAbortLight{
 struct sctpUnifiedAbortHeavy{
   struct sctpHeader mh;
   struct sctpChunkDesc uh;
-  u_int16_t causeCode;
-  u_int16_t causeLen;
+  uint16_t causeCode;
+  uint16_t causeLen;
 };
 
 /* For the graceful shutdown we must carry
  * the tag (in common header)  and the highest consequitive acking value
  */
 struct sctpShutdown {
-  u_int32_t TSN_Seen;
+  uint32_t TSN_Seen;
 };
 
 struct sctpUnifiedShutdown{
@@ -354,8 +354,8 @@ struct sctpUnifiedShutdown{
  * that is defined as a operation error.
  */
 struct sctpOpErrorCause{
-  u_int16_t cause;
-  u_int16_t causeLen;
+  uint16_t cause;
+  uint16_t causeLen;
 };
 
 struct sctpUnifiedOpError{
@@ -367,15 +367,15 @@ struct sctpUnifiedStreamError{
   struct sctpHeader mh;
   struct sctpChunkDesc uh;
   struct sctpOpErrorCause c;
-  u_int16_t strmNum;
-  u_int16_t reserved;
+  uint16_t strmNum;
+  uint16_t reserved;
 };
 
 struct staleCookieMsg{
   struct sctpHeader mh;
   struct sctpChunkDesc uh;
   struct sctpOpErrorCause c;
-  u_int32_t moretime;
+  uint32_t moretime;
 };
 
 /* the following is used in all sends
@@ -388,10 +388,10 @@ struct sctpUnifiedSingleMsg{
 };
 
 struct sctpDataPart{
-  u_int32_t TSN;
-  u_int16_t streamId;
-  u_int16_t sequence;
-  u_int32_t payloadtype;
+  uint32_t TSN;
+  uint16_t streamId;
+  uint16_t sequence;
+  uint32_t payloadtype;
 };
 
 struct sctpUnifiedDatagram{
@@ -401,13 +401,13 @@ struct sctpUnifiedDatagram{
 
 struct sctpECN_echo{
   struct sctpChunkDesc uh;
-  u_int32_t Lowest_TSN;
+  uint32_t Lowest_TSN;
 };
 
 
 struct sctpCWR{
   struct sctpChunkDesc uh;
-  u_int32_t TSN_reduced_at;
+  uint32_t TSN_reduced_at;
 };
 
 static const struct tok ForCES_channels[] = {
@@ -416,6 +416,68 @@ static const struct tok ForCES_channels[] = {
 	{ CHAN_LP, "ForCES LP" },
 	{ 0, NULL }
 };
+
+/* data chunk's payload protocol identifiers */
+
+#define SCTP_PPID_IUA 1
+#define SCTP_PPID_M2UA 2
+#define SCTP_PPID_M3UA 3
+#define SCTP_PPID_SUA 4
+#define SCTP_PPID_M2PA 5
+#define SCTP_PPID_V5UA 6
+#define SCTP_PPID_H248 7
+#define SCTP_PPID_BICC 8
+#define SCTP_PPID_TALI 9
+#define SCTP_PPID_DUA 10
+#define SCTP_PPID_ASAP 11
+#define SCTP_PPID_ENRP 12
+#define SCTP_PPID_H323 13
+#define SCTP_PPID_QIPC 14
+#define SCTP_PPID_SIMCO 15
+#define SCTP_PPID_DDPSC 16
+#define SCTP_PPID_DDPSSC 17
+#define SCTP_PPID_S1AP 18
+#define SCTP_PPID_RUA 19
+#define SCTP_PPID_HNBAP 20
+#define SCTP_PPID_FORCES_HP 21
+#define SCTP_PPID_FORCES_MP 22
+#define SCTP_PPID_FORCES_LP 23
+#define SCTP_PPID_SBC_AP 24
+#define SCTP_PPID_NBAP 25
+/* 26 */
+#define SCTP_PPID_X2AP 27
+
+static const struct tok PayloadProto_idents[] = {
+	{ SCTP_PPID_IUA,    "ISDN Q.921" },
+	{ SCTP_PPID_M2UA,   "M2UA"   },
+	{ SCTP_PPID_M3UA,   "M3UA"   },
+	{ SCTP_PPID_SUA,    "SUA"    },
+	{ SCTP_PPID_M2PA,   "M2PA"   },
+	{ SCTP_PPID_V5UA,   "V5.2"   },
+	{ SCTP_PPID_H248,   "H.248"  },
+	{ SCTP_PPID_BICC,   "BICC"   },
+	{ SCTP_PPID_TALI,   "TALI"   },
+	{ SCTP_PPID_DUA,    "DUA"    },
+	{ SCTP_PPID_ASAP,   "ASAP"   },
+	{ SCTP_PPID_ENRP,   "ENRP"   },
+	{ SCTP_PPID_H323,   "H.323"  },
+	{ SCTP_PPID_QIPC,   "Q.IPC"  },
+	{ SCTP_PPID_SIMCO,  "SIMCO"  },
+	{ SCTP_PPID_DDPSC,  "DDPSC"  },
+	{ SCTP_PPID_DDPSSC, "DDPSSC" },
+	{ SCTP_PPID_S1AP,   "S1AP"   },
+	{ SCTP_PPID_RUA,    "RUA"    },
+	{ SCTP_PPID_HNBAP,  "HNBAP"  },
+	{ SCTP_PPID_FORCES_HP, "ForCES HP" },
+	{ SCTP_PPID_FORCES_MP, "ForCES MP" },
+	{ SCTP_PPID_FORCES_LP, "ForCES LP" },
+	{ SCTP_PPID_SBC_AP, "SBc-AP" },
+	{ SCTP_PPID_NBAP,   "NBAP"   },
+	/* 26 */
+	{ SCTP_PPID_X2AP,   "X2AP"   },
+	{ 0, NULL }
+};
+
 
 static inline int isForCES_port(u_short Port)
 {
@@ -516,9 +578,9 @@ void sctp_print(netdissect_options *ndo,
 
        chunkDescPtr = (const struct sctpChunkDesc *) nextChunk, chunkCount++)
     {
-      u_int16_t chunkLength;
+      uint16_t chunkLength;
       const u_char *chunkEnd;
-      u_int16_t align;
+      uint16_t align;
 
       ND_TCHECK(*chunkDescPtr);
       chunkLength = EXTRACT_16BITS(&chunkDescPtr->chunkLength);
@@ -527,7 +589,7 @@ void sctp_print(netdissect_options *ndo,
         break;
       }
 
-      ND_TCHECK2(*((u_int8_t *)chunkDescPtr), chunkLength);
+      ND_TCHECK2(*((uint8_t *)chunkDescPtr), chunkLength);
       chunkEnd = ((const u_char*)chunkDescPtr + chunkLength);
 
       align=chunkLength % 4;
@@ -544,6 +606,9 @@ void sctp_print(netdissect_options *ndo,
 	case SCTP_DATA :
 	  {
 	    const struct sctpDataPart *dataHdrPtr;
+	    uint32_t ppid;
+	    const u_char *payloadPtr;
+	    u_int payload_size;
 
 	    if ((chunkDescPtr->chunkFlg & SCTP_DATA_UNORDERED)
 		== SCTP_DATA_UNORDERED)
@@ -569,49 +634,47 @@ void sctp_print(netdissect_options *ndo,
 
 	    dataHdrPtr=(const struct sctpDataPart*)(chunkDescPtr+1);
 
+	    ppid = EXTRACT_32BITS(&dataHdrPtr->payloadtype);
 	    ND_PRINT((ndo, "[TSN: %u] ", EXTRACT_32BITS(&dataHdrPtr->TSN)));
 	    ND_PRINT((ndo, "[SID: %u] ", EXTRACT_16BITS(&dataHdrPtr->streamId)));
 	    ND_PRINT((ndo, "[SSEQ %u] ", EXTRACT_16BITS(&dataHdrPtr->sequence)));
-	    ND_PRINT((ndo, "[PPID 0x%x] ", EXTRACT_32BITS(&dataHdrPtr->payloadtype)));
+	    ND_PRINT((ndo, "[PPID %s] ",
+		    tok2str(PayloadProto_idents, "0x%x", ppid)));
+
+	    if (!isforces) {
+		isforces = (ppid == SCTP_PPID_FORCES_HP) ||
+		    (ppid == SCTP_PPID_FORCES_MP) ||
+		    (ppid == SCTP_PPID_FORCES_LP);
+	    }
+
+	    payloadPtr = (const u_char *) (dataHdrPtr + 1);
+	    if (EXTRACT_16BITS(&chunkDescPtr->chunkLength) <
+		    sizeof(struct sctpDataPart) + sizeof(struct sctpChunkDesc) + 1) {
+		ND_PRINT((ndo, "bogus chunk length %u]", EXTRACT_16BITS(&chunkDescPtr->chunkLength)));
+		return;
+	    }
+
+	    payload_size = EXTRACT_16BITS(&chunkDescPtr->chunkLength) -
+		(sizeof(struct sctpDataPart) + sizeof(struct sctpChunkDesc));
+
 	    if (isforces) {
-		const u_char *payloadPtr;
-		u_int chunksize = sizeof(struct sctpDataPart)+
-			          sizeof(struct sctpChunkDesc);
-		payloadPtr = (const u_char *) (dataHdrPtr + 1);
-		if (EXTRACT_16BITS(&chunkDescPtr->chunkLength) <
-			sizeof(struct sctpDataPart)+
-			sizeof(struct sctpChunkDesc)+1) {
-		/* Less than 1 byte of chunk payload */
-			ND_PRINT((ndo, "bogus ForCES chunk length %u]",
-			    EXTRACT_16BITS(&chunkDescPtr->chunkLength)));
-			return;
-		}
-
-		forces_print(ndo, payloadPtr, EXTRACT_16BITS(&chunkDescPtr->chunkLength)- chunksize);
-	   } else if (ndo->ndo_vflag >= 2) {	/* if verbose output is specified */
+		forces_print(ndo, payloadPtr, payload_size);
+	    } else if (ndo->ndo_vflag >= 2) {	/* if verbose output is specified */
 					/* at the command line */
-		const u_char *payloadPtr;
-
-		ND_PRINT((ndo, "[Payload"));
-
-		if (!ndo->ndo_suppress_default_print) {
-			payloadPtr = (const u_char *) (++dataHdrPtr);
-			ND_PRINT((ndo, ":"));
-			if (EXTRACT_16BITS(&chunkDescPtr->chunkLength) <
-			    sizeof(struct sctpDataPart)+
-			    sizeof(struct sctpChunkDesc)+1) {
-				/* Less than 1 byte of chunk payload */
-				ND_PRINT((ndo, "bogus chunk length %u]",
-				    EXTRACT_16BITS(&chunkDescPtr->chunkLength)));
-				return;
+		switch (ppid) {
+		case SCTP_PPID_M3UA :
+			m3ua_print(ndo, payloadPtr, payload_size);
+			break;
+		default:
+			ND_PRINT((ndo, "[Payload"));
+			if (!ndo->ndo_suppress_default_print) {
+				ND_PRINT((ndo, ":"));
+				ND_DEFAULTPRINT(payloadPtr, payload_size);
 			}
-			ND_DEFAULTPRINT(payloadPtr,
-			      EXTRACT_16BITS(&chunkDescPtr->chunkLength) -
-			      (sizeof(struct sctpDataPart)+
-			      sizeof(struct sctpChunkDesc)));
-		} else
 			ND_PRINT((ndo, "]"));
-	      }
+			break;
+		}
+	    }
 	    break;
 	  }
 	case SCTP_INITIATION :
