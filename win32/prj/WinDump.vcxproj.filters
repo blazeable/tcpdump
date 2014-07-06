@@ -452,9 +452,6 @@
     <ClCompile Include="..\..\cpack.c">
       <Filter>Utility Functions</Filter>
     </ClCompile>
-    <ClCompile Include="..\Src\getopt.c">
-      <Filter>Utility Functions</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\bpf_dump.c">
       <Filter>Utility Functions</Filter>
     </ClCompile>
@@ -475,6 +472,18 @@
     </ClCompile>
     <ClCompile Include="..\..\missing\dlnames.c">
       <Filter>Protocol Data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\missing\getopt_long.c">
+      <Filter>Utility Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-aoe.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-m3ua.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\ether_ntohost.c">
+      <Filter>Utility Functions</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -595,6 +604,9 @@
     </ClInclude>
     <ClInclude Include="..\..\rpl.h">
       <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\getopt_long.h">
+      <Filter>Utility Functions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

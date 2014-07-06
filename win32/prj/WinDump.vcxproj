@@ -163,6 +163,7 @@
     <ClCompile Include="..\..\machdep.c" />
     <ClCompile Include="..\..\missing\datalinks.c" />
     <ClCompile Include="..\..\missing\dlnames.c" />
+    <ClCompile Include="..\..\missing\getopt_long.c" />
     <ClCompile Include="..\..\missing\inet_aton.c">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
@@ -184,6 +185,7 @@
     <ClCompile Include="..\..\print-ah.c" />
     <ClCompile Include="..\..\print-ahcp.c" />
     <ClCompile Include="..\..\print-aodv.c" />
+    <ClCompile Include="..\..\print-aoe.c" />
     <ClCompile Include="..\..\print-ap1394.c" />
     <ClCompile Include="..\..\print-arcnet.c" />
     <ClCompile Include="..\..\print-arp.c" />
@@ -246,6 +248,7 @@
     <ClCompile Include="..\..\print-lspping.c" />
     <ClCompile Include="..\..\print-lwapp.c" />
     <ClCompile Include="..\..\print-lwres.c" />
+    <ClCompile Include="..\..\print-m3ua.c" />
     <ClCompile Include="..\..\print-mobile.c" />
     <ClCompile Include="..\..\print-mobility.c" />
     <ClCompile Include="..\..\print-mpcp.c" />
@@ -314,7 +317,9 @@
     <ClCompile Include="..\..\strcasecmp.c" />
     <ClCompile Include="..\..\tcpdump.c" />
     <ClCompile Include="..\..\util.c" />
-    <ClCompile Include="..\Src\getopt.c" />
+    <ClCompile Include="..\Src\ether_ntohost.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\addrtoname.h" />
@@ -329,6 +334,7 @@
     <ClInclude Include="..\..\ether.h" />
     <ClInclude Include="..\..\ethertype.h" />
     <ClInclude Include="..\..\extract.h" />
+    <ClInclude Include="..\..\getopt_long.h" />
     <ClInclude Include="..\..\gmpls.h" />
     <ClInclude Include="..\..\gmt2local.h" />
     <ClInclude Include="..\..\interface.h" />
