@@ -28,7 +28,6 @@
 
 #include <sys/stat.h>
 
-#include <errno.h>
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
 #endif
@@ -136,11 +135,32 @@ fn_printzp(netdissect_options *ndo,
  * Format the timestamp
  */
 static char *
-ts_format(register int sec, register int usec)
+ts_format(netdissect_options *ndo, int sec, int usec)
 {
-        static char buf[sizeof("00:00:00.000000")];
-        (void)snprintf(buf, sizeof(buf), "%02d:%02d:%02d.%06u",
-               sec / 3600, (sec % 3600) / 60, sec % 60, usec);
+	static char buf[sizeof("00:00:00.000000000")];
+	const char *format;
+
+#ifdef HAVE_PCAP_SET_TSTAMP_PRECISION
+	switch (ndo->ndo_tstamp_precision) {
+
+	case PCAP_TSTAMP_PRECISION_MICRO:
+		format = "%02d:%02d:%02d.%06u";
+		break;
+
+	case PCAP_TSTAMP_PRECISION_NANO:
+		format = "%02d:%02d:%02d.%09u";
+		break;
+
+	default:
+		format = "%02d:%02d:%02d.{unknown precision}";
+		break;
+	}
+#else
+	format = "%02d:%02d:%02d.%06u";
+#endif
+
+	snprintf(buf, sizeof(buf), format,
+                 sec / 3600, (sec % 3600) / 60, sec % 60, usec);
 
         return buf;
 }
@@ -164,7 +184,7 @@ ts_print(netdissect_options *ndo,
 
 	case 0: /* Default */
 		s = (tvp->tv_sec + thiszone) % 86400;
-		ND_PRINT((ndo, "%s ", ts_format(s, tvp->tv_usec)));
+		ND_PRINT((ndo, "%s ", ts_format(ndo, s, tvp->tv_usec)));
 		break;
 
 	case 1: /* No time stamp */
@@ -192,7 +212,7 @@ ts_print(netdissect_options *ndo,
                     d_sec--;
                 }
 
-                ND_PRINT((ndo, "%s ", ts_format(d_sec, d_usec)));
+                ND_PRINT((ndo, "%s ", ts_format(ndo, d_sec, d_usec)));
 
                 if (ndo->ndo_tflag == 3) { /* set timestamp for last packet */
                     b_sec = tvp->tv_sec;
@@ -209,7 +229,7 @@ ts_print(netdissect_options *ndo,
 		else
 			ND_PRINT((ndo, "%04d-%02d-%02d %s ",
                                tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
-                               ts_format(s, tvp->tv_usec)));
+                               ts_format(ndo, s, tvp->tv_usec)));
 		break;
 	}
 }
@@ -321,6 +341,7 @@ bittok2str_internal(register const struct tok *lp, register const char *fmt,
         int buflen=0;
         register int rotbit; /* this is the bit we rotate through all bitpositions */
         register int tokval;
+        const char * sepstr = "";
 
 	while (lp != NULL && lp->s != NULL) {
             tokval=lp->v;   /* load our first value */
@@ -333,7 +354,8 @@ bittok2str_internal(register const struct tok *lp, register const char *fmt,
 		if (tokval == (v&rotbit)) {
                     /* ok we have found something */
                     buflen+=snprintf(buf+buflen, sizeof(buf)-buflen, "%s%s",
-                                     lp->s, sep ? ", " : "");
+                                     sepstr, lp->s);
+                    sepstr = sep ? ", " : "";
                     break;
                 }
                 rotbit=rotbit<<1; /* no match - lets shift and try again */
@@ -341,23 +363,10 @@ bittok2str_internal(register const struct tok *lp, register const char *fmt,
             lp++;
 	}
 
-        /* user didn't want string seperation - no need to cut off trailing seperators */
-        if (!sep) {
-            return (buf);
-        }
-
-        if (buflen != 0) { /* did we find anything */
-            /* yep, set the trailing zero 2 bytes before to eliminate the last comma & whitespace */
-            buf[buflen-2] = '\0';
-            return (buf);
-        }
-        else {
+        if (buflen == 0)
             /* bummer - lets print the "unknown" message as advised in the fmt string if we got one */
-            if (fmt == NULL)
-		fmt = "#%d";
-            (void)snprintf(buf, sizeof(buf), fmt, v);
-            return (buf);
-        }
+            (void)snprintf(buf, sizeof(buf), fmt == NULL ? "#%d" : fmt, v);
+        return (buf);
 }
 
 /*
@@ -409,9 +418,9 @@ tok2strary_internal(register const char **lp, int n, register const char *fmt,
  */
 
 int
-mask2plen(u_int32_t mask)
+mask2plen(uint32_t mask)
 {
-	u_int32_t bitmasks[33] = {
+	uint32_t bitmasks[33] = {
 		0x00000000,
 		0x80000000, 0xc0000000, 0xe0000000, 0xf0000000,
 		0xf8000000, 0xfc000000, 0xfe000000, 0xff000000,

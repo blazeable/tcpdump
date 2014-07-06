@@ -58,7 +58,6 @@ ikev2fourv4	ikev2four.pcap		ikev2fourv4.out	-t -v -v -v -v
 # ikev2pI2 test in crypto.sh
 
 # IETF ROLL RPL packets
-dio01           rpl-dio.pcap                rpl-dio.out         -t -v
 dio02           rpl-19-pickdag.pcap         rpl-19-pickdag.out  -t -v -v
 dio03           rpl-19-pickdag.pcap         rpl-19-pickdagvvv.out  -t -v -v -v
 dao01           rpl-14-dao.pcap             rpl-14-daovvv.out    -t -v -v -v
@@ -90,6 +89,7 @@ babel1          babel.pcap             babel1.out      -t
 babel1v         babel.pcap             babel1v.out     -t -v
 babel_auth      babel_auth.pcap        babel_auth.out  -t -v
 babel_pad1      babel_pad1.pcap        babel_pad1.out  -t
+babel_rtt       babel_rtt.pcap         babel_rtt.out   -t -v
 
 # PPPoE tests
 pppoe           pppoe.pcap             pppoe.out       -t
@@ -175,8 +175,11 @@ of10_7050q-v	of10_7050q.pcap		of10_7050q-v.out	-t -v
 # GeoNetworking and CALM FAST tests
 geonet-calm-fast	geonet_and_calm_fast.pcap	geonet_and_calm_fast.out	-t -vv -n
 
-# NFLOG test case
-nflog-e		nflog.pcap		nflog-e.out		-t -e
+# M3UA tests
+m3ua isup.pcap isup.out -t
+m3ua-vv isup.pcap isupvv.out -t -vv
+
+# NFLOG test case moved to nflog-e.sh
 
 # syslog test case
 syslog-v	syslog_udp.pcap		syslog-v.out		-t -v
@@ -248,3 +251,7 @@ isis_1-v	ISIS_external_lsp.pcap		isis_1-v.out	-t -v
 isis_2-v	ISIS_level1_adjacency.pcap	isis_2-v.out	-t -v
 isis_3-v	ISIS_level2_adjacency.pcap	isis_3-v.out	-t -v
 isis_4-v	ISIS_p2p_adjacency.pcap		isis_4-v.out	-t -v
+
+# ATA-over-Ethernet tests
+aoe_1		AoE_Linux.pcap		aoe_1.out	-t
+aoe_1-v		AoE_Linux.pcap		aoe_1-v.out	-t -v

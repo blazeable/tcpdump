@@ -31,8 +31,8 @@
 #define MPCP_TIMESTAMP_DURATION_LEN 2
 
 struct mpcp_common_header_t {
-    u_int8_t opcode[2];
-    u_int8_t timestamp[MPCP_TIMESTAMP_LEN];
+    uint8_t opcode[2];
+    uint8_t timestamp[MPCP_TIMESTAMP_LEN];
 };
 
 #define	MPCP_OPCODE_PAUSE   0x0001
@@ -64,13 +64,13 @@ static const struct tok mpcp_grant_flag_values[] = {
 };
 
 struct mpcp_grant_t {
-    u_int8_t starttime[MPCP_TIMESTAMP_LEN];
-    u_int8_t duration[MPCP_TIMESTAMP_DURATION_LEN];
+    uint8_t starttime[MPCP_TIMESTAMP_LEN];
+    uint8_t duration[MPCP_TIMESTAMP_DURATION_LEN];
 };
 
 struct mpcp_reg_req_t {
-    u_int8_t flags;
-    u_int8_t pending_grants;
+    uint8_t flags;
+    uint8_t pending_grants;
 };
 
 
@@ -81,10 +81,10 @@ static const struct tok mpcp_reg_req_flag_values[] = {
 };
 
 struct mpcp_reg_t {
-    u_int8_t assigned_port[2];
-    u_int8_t flags;
-    u_int8_t sync_time[MPCP_TIMESTAMP_DURATION_LEN];
-    u_int8_t echoed_pending_grants;
+    uint8_t assigned_port[2];
+    uint8_t flags;
+    uint8_t sync_time[MPCP_TIMESTAMP_DURATION_LEN];
+    uint8_t echoed_pending_grants;
 };
 
 static const struct tok mpcp_reg_flag_values[] = {
@@ -110,9 +110,9 @@ static const struct tok mpcp_report_bitmap_values[] = {
 };
 
 struct mpcp_reg_ack_t {
-    u_int8_t flags;
-    u_int8_t echoed_assigned_port[2];
-    u_int8_t echoed_sync_time[MPCP_TIMESTAMP_DURATION_LEN];
+    uint8_t flags;
+    uint8_t echoed_assigned_port[2];
+    uint8_t echoed_sync_time[MPCP_TIMESTAMP_DURATION_LEN];
 };
 
 static const struct tok mpcp_reg_ack_flag_values[] = {
@@ -134,15 +134,14 @@ mpcp_print(netdissect_options *ndo, register const u_char *pptr, register u_int 
 
 
     const u_char *tptr;
-    u_int16_t opcode;
-    u_int8_t grant_numbers, grant;
-    u_int8_t queue_sets, queue_set, report_bitmap, report;
+    uint16_t opcode;
+    uint8_t grant_numbers, grant;
+    uint8_t queue_sets, queue_set, report_bitmap, report;
 
     tptr=pptr;
     mpcp.common_header = (const struct mpcp_common_header_t *)pptr;
 
-    if (!ND_TTEST2(*tptr, sizeof(const struct mpcp_common_header_t)))
-        goto trunc;
+    ND_TCHECK2(*tptr, sizeof(const struct mpcp_common_header_t));
     opcode = EXTRACT_16BITS(mpcp.common_header->opcode);
     ND_PRINT((ndo, "MPCP, Opcode %s", tok2str(mpcp_opcode_values, "Unknown (%u)", opcode)));
     if (opcode != MPCP_OPCODE_PAUSE) {
@@ -160,8 +159,7 @@ mpcp_print(netdissect_options *ndo, register const u_char *pptr, register u_int 
         break;
 
     case MPCP_OPCODE_GATE:
-	if (!ND_TTEST2(*tptr, MPCP_GRANT_NUMBER_LEN))
-	    goto trunc;
+        ND_TCHECK2(*tptr, MPCP_GRANT_NUMBER_LEN);
         grant_numbers = *tptr & MPCP_GRANT_NUMBER_MASK;
         ND_PRINT((ndo, "\n\tGrant Numbers %u, Flags [ %s ]",
                grant_numbers,
@@ -171,8 +169,7 @@ mpcp_print(netdissect_options *ndo, register const u_char *pptr, register u_int 
         tptr++;
 
         for (grant = 1; grant <= grant_numbers; grant++) {
-            if (!ND_TTEST2(*tptr, sizeof(const struct mpcp_grant_t)))
-                goto trunc;
+            ND_TCHECK2(*tptr, sizeof(const struct mpcp_grant_t));
             mpcp.grant = (const struct mpcp_grant_t *)tptr;
             ND_PRINT((ndo, "\n\tGrant #%u, Start-Time %u ticks, duration %u ticks",
                    grant,
@@ -181,22 +178,19 @@ mpcp_print(netdissect_options *ndo, register const u_char *pptr, register u_int 
             tptr += sizeof(const struct mpcp_grant_t);
         }
 
-	if (!ND_TTEST2(*tptr, MPCP_TIMESTAMP_DURATION_LEN))
-	    goto trunc;
+        ND_TCHECK2(*tptr, MPCP_TIMESTAMP_DURATION_LEN);
         ND_PRINT((ndo, "\n\tSync-Time %u ticks", EXTRACT_16BITS(tptr)));
         break;
 
 
     case MPCP_OPCODE_REPORT:
-	if (!ND_TTEST2(*tptr, MPCP_REPORT_QUEUESETS_LEN))
-	    goto trunc;
+        ND_TCHECK2(*tptr, MPCP_REPORT_QUEUESETS_LEN);
         queue_sets = *tptr;
         tptr+=MPCP_REPORT_QUEUESETS_LEN;
         ND_PRINT((ndo, "\n\tTotal Queue-Sets %u", queue_sets));
 
         for (queue_set = 1; queue_set < queue_sets; queue_set++) {
-            if (!ND_TTEST2(*tptr, MPCP_REPORT_REPORTBITMAP_LEN))
-                goto trunc;
+            ND_TCHECK2(*tptr, MPCP_REPORT_REPORTBITMAP_LEN);
             report_bitmap = *(tptr);
             ND_PRINT((ndo, "\n\t  Queue-Set #%u, Report-Bitmap [ %s ]",
                    queue_sets,
@@ -206,8 +200,7 @@ mpcp_print(netdissect_options *ndo, register const u_char *pptr, register u_int 
             report=1;
             while (report_bitmap != 0) {
                 if (report_bitmap & 1) {
-                    if (!ND_TTEST2(*tptr, MPCP_TIMESTAMP_DURATION_LEN))
-                        goto trunc;
+                    ND_TCHECK2(*tptr, MPCP_TIMESTAMP_DURATION_LEN);
                     ND_PRINT((ndo, "\n\t    Q%u Report, Duration %u ticks",
                            report,
                            EXTRACT_16BITS(tptr)));
@@ -220,8 +213,7 @@ mpcp_print(netdissect_options *ndo, register const u_char *pptr, register u_int 
         break;
 
     case MPCP_OPCODE_REG_REQ:
-        if (!ND_TTEST2(*tptr, sizeof(const struct mpcp_reg_req_t)))
-            goto trunc;
+        ND_TCHECK2(*tptr, sizeof(const struct mpcp_reg_req_t));
         mpcp.reg_req = (const struct mpcp_reg_req_t *)tptr;
         ND_PRINT((ndo, "\n\tFlags [ %s ], Pending-Grants %u",
                bittok2str(mpcp_reg_req_flag_values, "Reserved", mpcp.reg_req->flags),
@@ -229,8 +221,7 @@ mpcp_print(netdissect_options *ndo, register const u_char *pptr, register u_int 
         break;
 
     case MPCP_OPCODE_REG:
-        if (!ND_TTEST2(*tptr, sizeof(const struct mpcp_reg_t)))
-            goto trunc;
+        ND_TCHECK2(*tptr, sizeof(const struct mpcp_reg_t));
         mpcp.reg = (const struct mpcp_reg_t *)tptr;
         ND_PRINT((ndo, "\n\tAssigned-Port %u, Flags [ %s ]" \
                "\n\tSync-Time %u ticks, Echoed-Pending-Grants %u",
@@ -241,8 +232,7 @@ mpcp_print(netdissect_options *ndo, register const u_char *pptr, register u_int 
         break;
 
     case MPCP_OPCODE_REG_ACK:
-        if (!ND_TTEST2(*tptr, sizeof(const struct mpcp_reg_ack_t)))
-            goto trunc;
+        ND_TCHECK2(*tptr, sizeof(const struct mpcp_reg_ack_t));
         mpcp.reg_ack = (const struct mpcp_reg_ack_t *)tptr;
         ND_PRINT((ndo, "\n\tEchoed-Assigned-Port %u, Flags [ %s ]" \
                "\n\tEchoed-Sync-Time %u ticks",

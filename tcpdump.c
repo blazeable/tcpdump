@@ -46,7 +46,6 @@ The Regents of the University of California.  All rights reserved.\n";
 #include <tcpdump-stdinc.h>
 
 #ifdef WIN32
-#include "getopt.h"
 #include "w32_fzs.h"
 extern int strcasecmp (const char *__s1, const char *__s2);
 extern int SIZE_BUF;
@@ -58,6 +57,15 @@ extern int SIZE_BUF;
 #include <smi.h>
 #endif
 
+#ifdef HAVE_LIBCRYPTO
+#include <openssl/crypto.h>
+#endif
+
+#ifdef HAVE_GETOPT_LONG
+#include <getopt.h>
+#else
+#include "getopt_long.h"
+#endif
 #include <pcap.h>
 #include <signal.h>
 #include <stdio.h>
@@ -69,7 +77,6 @@ extern int SIZE_BUF;
 #include <sys/resource.h>
 #include <pwd.h>
 #include <grp.h>
-#include <errno.h>
 #endif /* WIN32 */
 
 /* capabilities convinience library */
@@ -119,7 +126,8 @@ int32_t thiszone;		/* seconds offset from gmt to local time */
 /* Forwards */
 static RETSIGTYPE cleanup(int);
 static RETSIGTYPE child_cleanup(int);
-static void usage(void) __attribute__((noreturn));
+static void print_version(void);
+static void print_usage(void);
 static void show_dlts_and_exit(const char *device, pcap_t *pd) __attribute__((noreturn));
 
 static void print_packet(u_char *, const struct pcap_pkthdr *, const u_char *);
@@ -548,6 +556,27 @@ show_devices_and_exit (void)
 #endif /* HAVE_PCAP_FINDALLDEVS */
 
 /*
+ * Short options.
+ *
+ * Note that there we use all letters for short options except for g, k,
+ * o, and P, and those are used by other versions of tcpdump, and we should
+ * only use them for the same purposes that the other versions of tcpdump
+ * use them:
+ *
+ * OS X tcpdump uses -g to force non--v output for IP to be on one
+ * line, making it more "g"repable;
+ *
+ * OS X tcpdump uses -k tospecify that packet comments in pcap-ng files
+ * should be printed;
+ *
+ * OpenBSD tcpdump uses -o to indicate that OS fingerprinting should be done
+ * for hosts sending TCP SYN packets;
+ *
+ * OS X tcpdump uses -P to indicate that -w should write pcap-ng rather
+ * than pcap files.
+ */
+
+/*
  * Set up flags that might or might not be supported depending on the
  * version of libpcap we're using.
  */
@@ -599,6 +628,69 @@ show_devices_and_exit (void)
 #define Q_FLAG
 #endif
 
+/*
+ * Long options.
+ *
+ * We do not currently have long options corresponding to all short
+ * options; we should probably pick appropriate option names for them.
+ *
+ * However, the short options where the number of times the option is
+ * specified matters, such as -v and -d and -t, should probably not
+ * just map to a long option, as saying
+ *
+ *  tcpdump --verbose --verbose
+ *
+ * doesn't make sense; it should be --verbosity={N} or something such
+ * as that.
+ *
+ * For long options with no corresponding short options, we define values
+ * outside the range of ASCII graphic characters, make that the last
+ * component of the entry for the long option, and have a case for that
+ * option in the switch statement.
+ */
+#define OPTION_NUMBER		128
+#define OPTION_VERSION		129
+#define OPTION_TSTAMP_PRECISION	130
+
+static const struct option longopts[] = {
+#if defined(HAVE_PCAP_CREATE) || defined(WIN32)
+	{ "buffer-size", required_argument, NULL, 'B' },
+#endif
+	{ "list-interfaces", no_argument, NULL, 'D' },
+	{ "help", no_argument, NULL, 'h' },
+	{ "interface", required_argument, NULL, 'i' },
+#ifdef HAVE_PCAP_CREATE
+	{ "monitor-mode", no_argument, NULL, 'I' },
+#endif
+#ifdef HAVE_PCAP_SET_TSTAMP_TYPE
+	{ "time-stamp-type", required_argument, NULL, 'j' },
+	{ "list-time-stamp-types", no_argument, NULL, 'J' },
+#endif
+#ifdef HAVE_PCAP_SET_TSTAMP_PRECISION
+	{ "time-stamp-precision", required_argument, NULL, OPTION_TSTAMP_PRECISION},
+#endif
+	{ "dont-verify-checksums", no_argument, NULL, 'K' },
+	{ "list-data-link-types", no_argument, NULL, 'L' },
+	{ "no-optimize", no_argument, NULL, 'O' },
+	{ "no-promiscuous-mode", no_argument, NULL, 'p' },
+#ifdef HAVE_PCAP_SETDIRECTION
+	{ "direction", required_argument, NULL, 'Q' },
+#endif
+	{ "snapshot-length", required_argument, NULL, 's' },
+	{ "absolute-tcp-sequence-numbers", no_argument, NULL, 'S' },
+#ifdef HAVE_PCAP_DUMP_FLUSH
+	{ "packet-buffered", no_argument, NULL, 'U' },
+#endif
+	{ "linktype", required_argument, NULL, 'y' },
+#if defined(HAVE_PCAP_DEBUG) || defined(HAVE_YYDEBUG)
+	{ "debug-filter-parser", no_argument, NULL, 'Y' },
+#endif
+	{ "relinquish-privileges", required_argument, NULL, 'Z' },
+	{ "number", no_argument, NULL, OPTION_NUMBER },
+	{ "version", no_argument, NULL, OPTION_VERSION },
+	{ NULL, 0, NULL, 0 }
+};
+
 #ifndef WIN32
 /* Drop root privileges and chroot if necessary */
 static void
@@ -623,7 +715,10 @@ droproot(const char *username, const char *chroot_dir)
 #ifdef HAVE_CAP_NG_H
 		int ret = capng_change_id(pw->pw_uid, pw->pw_gid, CAPNG_NO_FLAG);
 		if (ret < 0) {
-			printf("error : ret %d\n", ret);
+			fprintf(stderr, "error : ret %d\n", ret);
+		}
+		else {
+			printf("dropped privs to %s\n", username);
 		}
 		/* We don't need CAP_SETUID and CAP_SETGID */
 		capng_update(CAPNG_DROP, CAPNG_EFFECTIVE, CAP_SETUID);
@@ -641,6 +736,9 @@ droproot(const char *username, const char *chroot_dir)
 			    (unsigned long)pw->pw_gid,
 			    pcap_strerror(errno));
 			exit(1);
+		}
+		else {
+			printf("dropped privs to %s\n", username);
 		}
 #endif /* HAVE_CAP_NG_H */
 	}
@@ -752,6 +850,36 @@ get_next_file(FILE *VFile, char *ptr)
 	return ret;
 }
 
+#ifdef HAVE_PCAP_SET_TSTAMP_PRECISION
+static int
+tstamp_precision_from_string(const char *precision)
+{
+	if (strncmp(precision, "nano", strlen("nano")) == 0)
+		return PCAP_TSTAMP_PRECISION_NANO;
+
+	if (strncmp(precision, "micro", strlen("micro")) == 0)
+		return PCAP_TSTAMP_PRECISION_MICRO;
+
+	return -EINVAL;
+}
+
+static const char *
+tstamp_precision_to_string(int precision)
+{
+	switch (precision) {
+
+	case PCAP_TSTAMP_PRECISION_MICRO:
+		return "micro";
+
+	case PCAP_TSTAMP_PRECISION_NANO:
+		return "nano";
+
+	default:
+		return "unknown";
+	}
+}
+#endif
+
 int
 main(int argc, char **argv)
 {
@@ -817,7 +945,7 @@ main(int argc, char **argv)
 #endif
 
 	while (
-	    (op = getopt(argc, argv, "aAb" B_FLAG "c:C:d" D_FLAG "eE:fF:G:hHi:" I_FLAG j_FLAG J_FLAG "KlLm:M:nNOpq" Q_FLAG "r:Rs:StT:u" U_FLAG "vV:w:W:xXy:Yz:Z:")) != -1)
+	    (op = getopt_long(argc, argv, "aAb" B_FLAG "c:C:d" D_FLAG "eE:fF:G:hHi:" I_FLAG j_FLAG J_FLAG "KlLm:M:nNOpq" Q_FLAG "r:Rs:StT:u" U_FLAG "vV:w:W:xXy:Yz:Z:", longopts, NULL)) != -1)
 		switch (op) {
 
 		case 'a':
@@ -899,7 +1027,8 @@ main(int argc, char **argv)
 			break;
 
 		case 'h':
-			usage();
+			print_usage();
+			exit(0);
 			break;
 
 		case 'H':
@@ -1177,8 +1306,26 @@ main(int argc, char **argv)
 			username = strdup(optarg);
 			break;
 
+		case OPTION_NUMBER:
+			gndo->ndo_packet_number = 1;
+			break;
+
+		case OPTION_VERSION:
+			print_version();
+			exit(0);
+			break;
+
+#ifdef HAVE_PCAP_SET_TSTAMP_PRECISION
+		case OPTION_TSTAMP_PRECISION:
+			gndo->ndo_tstamp_precision = tstamp_precision_from_string(optarg);
+			if (gndo->ndo_tstamp_precision < 0)
+				error("unsupported time stamp precision");
+			break;
+#endif
+
 		default:
-			usage();
+			print_usage();
+			exit(1);
 			/* NOTREACHED */
 		}
 
@@ -1267,7 +1414,13 @@ main(int argc, char **argv)
 			RFileName = VFileLine;
 		}
 
+#ifdef HAVE_PCAP_SET_TSTAMP_PRECISION
+		pd = pcap_open_offline_with_tstamp_precision(RFileName,
+		    gndo->ndo_tstamp_precision, ebuf);
+#else
 		pd = pcap_open_offline(RFileName, ebuf);
+#endif
+
 		if (pd == NULL)
 			error("%s", ebuf);
 		dlt = pcap_datalink(pd);
@@ -1314,6 +1467,15 @@ main(int argc, char **argv)
 		if (Jflag)
 			show_tstamp_types_and_exit(device, pd);
 #endif
+#ifdef HAVE_PCAP_SET_TSTAMP_PRECISION
+		status = pcap_set_tstamp_precision(pd, gndo->ndo_tstamp_precision);
+		if (status != 0)
+			error("%s: Can't set %ssecond time stamp precision: %s",
+				device,
+				tstamp_precision_to_string(gndo->ndo_tstamp_precision),
+				pcap_statustostr(status));
+#endif
+
 		/*
 		 * Is this an interface that supports monitor mode?
 		 */
@@ -1999,6 +2161,10 @@ print_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *sp)
 
 	print_info = (struct print_info *)user;
         ndo = print_info->ndo;
+
+	if(ndo->ndo_packet_number)
+		ND_PRINT((ndo, "%5u  ", packets_captured));
+
 	ts_print(ndo, &h->ts);
 
 	/*
@@ -2154,8 +2320,9 @@ static void verbose_stats_dump(int sig _U_)
 }
 #endif
 
+USES_APPLE_DEPRECATED_API
 static void
-usage(void)
+print_version(void)
 {
 	extern char version[];
 #ifndef HAVE_PCAP_LIB_VERSION
@@ -2182,23 +2349,43 @@ usage(void)
 	(void)fprintf(stderr, "libpcap version %s\n", pcap_version);
 #endif /* WIN32 */
 #endif /* HAVE_PCAP_LIB_VERSION */
+
+#if defined(HAVE_LIBCRYPTO) && defined(SSLEAY_VERSION)
+	(void)fprintf (stderr, "%s\n", SSLeay_version(SSLEAY_VERSION));
+#endif
+
+#if defined(HAVE_SMI_H)
+	(void)fprintf (stderr, "SMI-library: %s\n", smi_version_string);
+#endif
+}
+USES_APPLE_RST
+
+static void
+print_usage(void)
+{
+	print_version();
 	(void)fprintf(stderr,
 "Usage: %s [-aAbd" D_FLAG "efhH" I_FLAG J_FLAG "KlLnNOpqRStu" U_FLAG "vxX]" B_FLAG_USAGE " [ -c count ]\n", program_name);
 	(void)fprintf(stderr,
 "\t\t[ -C file_size ] [ -E algo:secret ] [ -F file ] [ -G seconds ]\n");
 	(void)fprintf(stderr,
-"\t\t[ -i interface ]" j_FLAG_USAGE " [ -M secret ]\n");
+"\t\t[ -i interface ]" j_FLAG_USAGE " [ -M secret ] [ --number ]\n");
 #ifdef HAVE_PCAP_SETDIRECTION
 	(void)fprintf(stderr,
 "\t\t[ -Q in|out|inout ]\n");
 #endif
 	(void)fprintf(stderr,
-"\t\t[ -r file ] [ -s snaplen ] [ -T type ] [ -V file ] [ -w file ]\n");
+"\t\t[ -r file ] [ -s snaplen ] ");
+#ifdef HAVE_PCAP_SET_TSTAMP_PRECISION
+	(void)fprintf(stderr, "[ --time-stamp-precision precision ]\n");
 	(void)fprintf(stderr,
-"\t\t[ -W filecount ] [ -y datalinktype ] [ -z command ]\n");
+"\t\t");
+#endif
+	(void)fprintf(stderr, "[ -T type ] [ --version ] [ -V file ]\n");
+	(void)fprintf(stderr,
+"\t\t[ -w file ] [ -W filecount ] [ -y datalinktype ] [ -z command ]\n");
 	(void)fprintf(stderr,
 "\t\t[ -Z user ] [ expression ]\n");
-	exit(1);
 }
 
 

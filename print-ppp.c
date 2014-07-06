@@ -738,9 +738,8 @@ print_lcp_config_options(netdissect_options *ndo,
 				ND_PRINT((ndo, " (length bogus, should be = 9)"));
 				return 0;
 			}
-			ND_TCHECK(p[8]);
-			ND_PRINT((ndo, ": MAC %02x:%02x:%02x:%02x:%02x:%02x",
-			       p[3], p[4], p[5], p[6], p[7], p[8]));
+			ND_TCHECK2(*(p + 3), 6);
+			ND_PRINT((ndo, ": MAC %s", etheraddr_string(ndo, p + 3)));
 			break;
 		case MEDCLASS_MNB:
 			ND_PRINT((ndo, ": Magic-Num-Block")); /* XXX */
@@ -1359,7 +1358,7 @@ ppp_hdlc(netdissect_options *ndo,
         if (length <= 0)
                 return;
 
-	b = (u_int8_t *)malloc(length);
+	b = (uint8_t *)malloc(length);
 	if (b == NULL)
 		return;
 
@@ -1703,7 +1702,7 @@ ppp_bsdos_if_print(netdissect_options *ndo _U_,
 #ifdef __bsdi__
 	register u_int length = h->len;
 	register u_int caplen = h->caplen;
-	u_int16_t ptype;
+	uint16_t ptype;
 	const u_char *q;
 	int i;
 

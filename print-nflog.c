@@ -39,8 +39,10 @@
 
 static const struct tok nflog_values[] = {
 	{ AF_INET,		"IPv4" },
+#ifdef INET6
 	{ AF_INET6,		"IPv6" },
-	{ 0,				NULL }
+#endif /*INET6*/
+	{ 0,			NULL }
 };
 
 static inline void
@@ -69,8 +71,8 @@ nflog_if_print(netdissect_options *ndo,
 {
 	const nflog_hdr_t *hdr = (const nflog_hdr_t *)p;
 	const nflog_tlv_t *tlv;
-	u_int16_t size;
-	u_int16_t h_size = sizeof(nflog_hdr_t);
+	uint16_t size;
+	uint16_t h_size = sizeof(nflog_hdr_t);
 	u_int caplen = h->caplen;
 	u_int length = h->len;
 

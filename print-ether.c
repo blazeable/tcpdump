@@ -76,11 +76,13 @@ const struct tok ethertype_values[] = {
     { ETHERTYPE_GRE_ISO,        "GRE-OSI" },
     { ETHERTYPE_CFM_OLD,        "CFM (old)" },
     { ETHERTYPE_CFM,            "CFM" },
+    { ETHERTYPE_IEEE1905_1,     "IEEE1905.1" },
     { ETHERTYPE_LLDP,           "LLDP" },
     { ETHERTYPE_TIPC,           "TIPC"},
     { ETHERTYPE_GEONET_OLD,     "GeoNet (old)"},
     { ETHERTYPE_GEONET,         "GeoNet"},
     { ETHERTYPE_CALM_FAST,      "CALM FAST"},
+    { ETHERTYPE_AOE,            "AoE" },
     { 0, NULL}
 };
 
@@ -89,7 +91,7 @@ ether_hdr_print(netdissect_options *ndo,
                 const u_char *bp, u_int length)
 {
 	register const struct ether_header *ep;
-	u_int16_t ether_type;
+	uint16_t ether_type;
 
 	ep = (const struct ether_header *)bp;
 
@@ -181,7 +183,7 @@ recurse:
 			return;
 		}
 	        if (ndo->ndo_eflag) {
-	        	u_int16_t tag = EXTRACT_16BITS(p);
+	        	uint16_t tag = EXTRACT_16BITS(p);
 
 			ND_PRINT((ndo, "vlan %u, p %u%s, ",
 			    tag & 0xfff,
@@ -423,10 +425,15 @@ ethertype_print(netdissect_options *ndo,
                 calm_fast_print(ndo, p-14, p, length);
                 return (1);
 
+	case ETHERTYPE_AOE:
+		aoe_print(ndo, p, length);
+		return (1);
+
 	case ETHERTYPE_LAT:
 	case ETHERTYPE_SCA:
 	case ETHERTYPE_MOPRC:
 	case ETHERTYPE_MOPDL:
+	case ETHERTYPE_IEEE1905_1:
 		/* default_print for now */
 	default:
 		return (0);

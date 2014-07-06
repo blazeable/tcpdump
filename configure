@@ -3779,6 +3779,7 @@ $as_echo "$ac_cv___attribute___format_function_pointer" >&6; }
 
 	fi
 fi
+
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -4318,38 +4319,6 @@ fi
 			;;
 		esac
 	fi
-	;;
-
-linux*)
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking Linux kernel version" >&5
-$as_echo_n "checking Linux kernel version... " >&6; }
- 	if test "$cross_compiling" = yes; then
- 		if ${ac_cv_linux_vers+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_cv_linux_vers=unknown
-fi
-
- 	else
- 		if ${ac_cv_linux_vers+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_cv_linux_vers=`uname -r 2>&1 | \
- 			sed -n -e '$s/.* //' -e '$s/\..*//p'`
-fi
-
- 	fi
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_linux_vers" >&5
-$as_echo "$ac_cv_linux_vers" >&6; }
- 	if test $ac_cv_linux_vers = unknown ; then
- 		as_fn_error $? "cannot determine linux version when cross-compiling" "$LINENO" 5
- 	fi
-	if test $ac_cv_linux_vers -lt 2 ; then
-		as_fn_error $? "version 2 or higher required; see the INSTALL doc for more info" "$LINENO" 5
-	fi
-	;;
-
-*)
 	;;
 esac
 
@@ -5463,6 +5432,19 @@ esac
 
 fi
 
+ac_fn_c_check_func "$LINENO" "getopt_long" "ac_cv_func_getopt_long"
+if test "x$ac_cv_func_getopt_long" = xyes; then :
+  $as_echo "#define HAVE_GETOPT_LONG 1" >>confdefs.h
+
+else
+  case " $LIBOBJS " in
+  *" getopt_long.$ac_objext "* ) ;;
+  *) LIBOBJS="$LIBOBJS getopt_long.$ac_objext"
+ ;;
+esac
+
+fi
+
 
 for ac_func in fork vfork strftime
 do :
@@ -6097,7 +6079,20 @@ fi
                         ac_fn_c_check_func "$LINENO" "pcap_list_datalinks" "ac_cv_func_pcap_list_datalinks"
 if test "x$ac_cv_func_pcap_list_datalinks" = xyes; then :
 
+
 $as_echo "#define HAVE_PCAP_LIST_DATALINKS 1" >>confdefs.h
+
+	    for ac_func in pcap_free_datalinks
+do :
+  ac_fn_c_check_func "$LINENO" "pcap_free_datalinks" "ac_cv_func_pcap_free_datalinks"
+if test "x$ac_cv_func_pcap_free_datalinks" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_PCAP_FREE_DATALINKS 1
+_ACEOF
+
+fi
+done
+
 
 else
 
@@ -6110,12 +6105,16 @@ esac
 
 fi
 
-    ac_fn_c_check_func "$LINENO" "pcap_set_datalink" "ac_cv_func_pcap_set_datalink"
+    for ac_func in pcap_set_datalink
+do :
+  ac_fn_c_check_func "$LINENO" "pcap_set_datalink" "ac_cv_func_pcap_set_datalink"
 if test "x$ac_cv_func_pcap_set_datalink" = xyes; then :
-
-$as_echo "#define HAVE_PCAP_SET_DATALINK 1" >>confdefs.h
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_PCAP_SET_DATALINK 1
+_ACEOF
 
 fi
+done
 
     ac_fn_c_check_func "$LINENO" "pcap_datalink_name_to_val" "ac_cv_func_pcap_datalink_name_to_val"
 if test "x$ac_cv_func_pcap_datalink_name_to_val" = xyes; then :
@@ -6164,7 +6163,7 @@ fi
 done
 
 
-                ac_fn_c_check_func "$LINENO" "pcap_dump_ftell" "ac_cv_func_pcap_dump_ftell"
+                    ac_fn_c_check_func "$LINENO" "pcap_dump_ftell" "ac_cv_func_pcap_dump_ftell"
 if test "x$ac_cv_func_pcap_dump_ftell" = xyes; then :
 
 $as_echo "#define HAVE_PCAP_DUMP_FTELL 1" >>confdefs.h
@@ -6581,6 +6580,21 @@ _ACEOF
 fi
 done
 
+	#
+	# And do we have pcap_set_tstamp_precision?  If so, we assume
+	# we also have pcap_open_offline_with_tstamp_precision.
+	#
+	for ac_func in pcap_set_tstamp_precision
+do :
+  ac_fn_c_check_func "$LINENO" "pcap_set_tstamp_precision" "ac_cv_func_pcap_set_tstamp_precision"
+if test "x$ac_cv_func_pcap_set_tstamp_precision" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_PCAP_SET_TSTAMP_PRECISION 1
+_ACEOF
+
+fi
+done
+
 fi
 
 for ac_func in pcap_findalldevs pcap_dump_flush pcap_lib_version pcap_setdirection
@@ -6797,6 +6811,7 @@ fi
 #
 # Make sure we have definitions for all the C99 specified-width types
 # (regardless of whether the environment is a C99 environment or not).
+#
 ac_fn_c_find_intX_t "$LINENO" "8" "ac_cv_c_int8_t"
 case $ac_cv_c_int8_t in #(
   no|yes) ;; #(
@@ -6897,73 +6912,54 @@ _ACEOF
 
 
 #
-# For now, we're using the old BSD-style u_intXX_t types, so check for
-# them.
+# Define the old BSD specified-width types in terms of the C99 types;
+# we may need them with libpcap include files.
 #
-# We should probably migrate to the standard C uintXX_t types.
-#
-for ac_header in sys/bitypes.h
-do :
-  ac_fn_c_check_header_mongrel "$LINENO" "sys/bitypes.h" "ac_cv_header_sys_bitypes_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_bitypes_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_SYS_BITYPES_H 1
-_ACEOF
-
-fi
-
-done
-
-
 ac_fn_c_check_type "$LINENO" "u_int8_t" "ac_cv_type_u_int8_t" "$ac_includes_default
-#ifdef HAVE_SYS_BITYPES_H
-#include <sys/bitypes.h>
-#endif
+#include <sys/types.h>
+
 "
 if test "x$ac_cv_type_u_int8_t" = xyes; then :
 
 else
 
-$as_echo "#define u_int8_t unsigned char" >>confdefs.h
+$as_echo "#define u_int8_t uint8_t" >>confdefs.h
 
 fi
 
 ac_fn_c_check_type "$LINENO" "u_int16_t" "ac_cv_type_u_int16_t" "$ac_includes_default
-#ifdef HAVE_SYS_BITYPES_H
-#include <sys/bitypes.h>
-#endif
+#include <sys/types.h>
+
 "
 if test "x$ac_cv_type_u_int16_t" = xyes; then :
 
 else
 
-$as_echo "#define u_int16_t unsigned short" >>confdefs.h
+$as_echo "#define u_int16_t uint16_t" >>confdefs.h
 
 fi
 
 ac_fn_c_check_type "$LINENO" "u_int32_t" "ac_cv_type_u_int32_t" "$ac_includes_default
-#ifdef HAVE_SYS_BITYPES_H
-#include <sys/bitypes.h>
-#endif
+#include <sys/types.h>
+
 "
 if test "x$ac_cv_type_u_int32_t" = xyes; then :
 
 else
 
-$as_echo "#define u_int32_t unsigned int" >>confdefs.h
+$as_echo "#define u_int32_t uint32_t" >>confdefs.h
 
 fi
 
 ac_fn_c_check_type "$LINENO" "u_int64_t" "ac_cv_type_u_int64_t" "$ac_includes_default
-#ifdef HAVE_SYS_BITYPES_H
-#include <sys/bitypes.h>
-#endif
+#include <sys/types.h>
+
 "
 if test "x$ac_cv_type_u_int64_t" = xyes; then :
 
 else
 
-$as_echo "#define u_int64_t unsigned long long" >>confdefs.h
+$as_echo "#define u_int64_t uint64_t" >>confdefs.h
 
 fi
 
@@ -6992,16 +6988,13 @@ $as_echo_n "checking whether inttypes.h defines the PRI[doxu]64 macros... " >&6;
 	    #include <inttypes.h>
 	    #include <stdio.h>
 	    #include <sys/types.h>
-	    #ifdef HAVE_SYS_BITYPES_H
-	    #include <sys/bitypes.h>
-	    #endif
 
 	    main()
 	    {
-	      printf("%" PRId64 "\n", (u_int64_t)1);
-	      printf("%" PRIo64 "\n", (u_int64_t)1);
-	      printf("%" PRIx64 "\n", (u_int64_t)1);
-	      printf("%" PRIu64 "\n", (u_int64_t)1);
+	      printf("%" PRId64 "\n", (uint64_t)1);
+	      printf("%" PRIo64 "\n", (uint64_t)1);
+	      printf("%" PRIx64 "\n", (uint64_t)1);
+	      printf("%" PRIu64 "\n", (uint64_t)1);
 	    }
 
 
@@ -7050,15 +7043,12 @@ else
 #	    ifdef HAVE_INTTYPES_H
 	    #include <inttypes.h>
 #	    endif
-#	    ifdef HAVE_SYS_BITYPES_H
-            #include <sys/bitypes.h>
-#	    endif
 	    #include <stdio.h>
 	    #include <sys/types.h>
 
 	    main()
 	    {
-	      u_int64_t t = 1;
+	      uint64_t t = 1;
 	      char strbuf[16+1];
 	      sprintf(strbuf, "%016lx", t << 32);
 	      if (strcmp(strbuf, "0000000100000000") == 0)
@@ -7107,15 +7097,12 @@ else
 #	    ifdef HAVE_INTTYPES_H
 	    #include <inttypes.h>
 #	    endif
-#	    ifdef HAVE_SYS_BITYPES_H
-            #include <sys/bitypes.h>
-#	    endif
 	    #include <stdio.h>
 	    #include <sys/types.h>
 
 	    main()
 	    {
-	      u_int64_t t = 1;
+	      uint64_t t = 1;
 	      char strbuf[16+1];
 	      sprintf(strbuf, "%016llx", t << 32);
 	      if (strcmp(strbuf, "0000000100000000") == 0)
@@ -7164,15 +7151,12 @@ else
 #	    ifdef HAVE_INTTYPES_H
 	    #include <inttypes.h>
 #	    endif
-#	    ifdef HAVE_SYS_BITYPES_H
-            #include <sys/bitypes.h>
-#	    endif
 	    #include <stdio.h>
 	    #include <sys/types.h>
 
 	    main()
 	    {
-	      u_int64_t t = 1;
+	      uint64_t t = 1;
 	      char strbuf[16+1];
 	      sprintf(strbuf, "%016Lx", t << 32);
 	      if (strcmp(strbuf, "0000000100000000") == 0)
@@ -7221,15 +7205,12 @@ else
 #	    ifdef HAVE_INTTYPES_H
 	    #include <inttypes.h>
 #	    endif
-#	    ifdef HAVE_SYS_BITYPES_H
-            #include <sys/bitypes.h>
-#	    endif
 	    #include <stdio.h>
 	    #include <sys/types.h>
 
 	    main()
 	    {
-	      u_int64_t t = 1;
+	      uint64_t t = 1;
 	      char strbuf[16+1];
 	      sprintf(strbuf, "%016qx", t << 32);
 	      if (strcmp(strbuf, "0000000100000000") == 0)

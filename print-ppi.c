@@ -26,13 +26,13 @@ static inline void
 ppi_header_print(netdissect_options *ndo, const u_char *bp, u_int length)
 {
 	const ppi_header_t *hdr;
-	u_int32_t dlt;
-	u_int16_t len;
+	uint32_t dlt;
+	uint16_t len;
 
 	hdr = (const ppi_header_t *)bp;
 
-	len = EXTRACT_16BITS(&hdr->ppi_len);
-	dlt = EXTRACT_32BITS(&hdr->ppi_dlt);
+	len = EXTRACT_LE_16BITS(&hdr->ppi_len);
+	dlt = EXTRACT_LE_32BITS(&hdr->ppi_dlt);
 
 	if (!ndo->ndo_qflag) {
 		ND_PRINT((ndo,", V.%d DLT %s (%d) len %d", hdr->ppi_ver,
@@ -54,14 +54,14 @@ ppi_print(netdissect_options *ndo,
 	ppi_header_t *hdr;
 	u_int caplen = h->caplen;
 	u_int length = h->len;
-	u_int32_t dlt;
+	uint32_t dlt;
 
 	if (caplen < sizeof(ppi_header_t)) {
 		ND_PRINT((ndo, "[|ppi]"));
 		return;
 	}
 	hdr = (ppi_header_t *)p;
-	dlt = EXTRACT_32BITS(&hdr->ppi_dlt);
+	dlt = EXTRACT_LE_32BITS(&hdr->ppi_dlt);
 
 	if (ndo->ndo_eflag)
 		ppi_header_print(ndo, p, length);

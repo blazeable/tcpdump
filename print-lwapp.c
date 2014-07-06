@@ -41,10 +41,10 @@
  */
 
 struct lwapp_transport_header {
-    u_int8_t  version;
-    u_int8_t  frag_id;
-    u_int8_t  length[2];
-    u_int16_t status;
+    uint8_t  version;
+    uint8_t  frag_id;
+    uint8_t  length[2];
+    uint16_t status;
 };
 
 /*
@@ -61,10 +61,10 @@ struct lwapp_transport_header {
  */
 
 struct lwapp_control_header {
-    u_int8_t  msg_type;
-    u_int8_t  seq_num;
-    u_int8_t  len[2];
-    u_int8_t  session_id[4];
+    uint8_t  msg_type;
+    uint8_t  seq_num;
+    uint8_t  len[2];
+    uint8_t  session_id[4];
 };
 
 #define LWAPP_VERSION 0
@@ -156,8 +156,8 @@ static const struct tok lwapp_msg_type_values[] = {
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  */
 struct lwapp_message_header {
-    u_int8_t type;
-    u_int8_t length[2];
+    uint8_t type;
+    uint8_t length[2];
 };
 
 void
@@ -174,8 +174,7 @@ lwapp_control_print(netdissect_options *ndo,
 
     if (has_ap_ident) {
         /* check if enough bytes for AP identity */
-        if (!ND_TTEST2(*tptr, 6))
-            goto trunc;
+        ND_TCHECK2(*tptr, 6);
         lwapp_trans_header = (const struct lwapp_transport_header *)(pptr+6);
     } else {
         lwapp_trans_header = (const struct lwapp_transport_header *)pptr;
@@ -222,8 +221,7 @@ lwapp_control_print(netdissect_options *ndo,
     while(tlen>0) {
 
         /* did we capture enough for fully decoding the object header ? */
-        if (!ND_TTEST2(*tptr, sizeof(struct lwapp_control_header)))
-            goto trunc;
+        ND_TCHECK2(*tptr, sizeof(struct lwapp_control_header));
 
         lwapp_control_header = (const struct lwapp_control_header *)tptr;
 	msg_tlen = EXTRACT_16BITS(lwapp_control_header->len);
@@ -237,8 +235,7 @@ lwapp_control_print(netdissect_options *ndo,
                EXTRACT_32BITS(lwapp_control_header->session_id)));
 
         /* did we capture enough for fully decoding the message */
-        if (!ND_TTEST2(*tptr, msg_tlen))
-            goto trunc;
+        ND_TCHECK2(*tptr, msg_tlen);
 
 	/* XXX - Decode sub messages for each message */
         switch(lwapp_control_header->msg_type) {
@@ -297,8 +294,7 @@ lwapp_data_print(netdissect_options *ndo,
     tptr=pptr;
 
     /* check if enough bytes for AP identity */
-    if (!ND_TTEST2(*tptr, 6))
-        goto trunc;
+    ND_TCHECK2(*tptr, 6);
     lwapp_trans_header = (const struct lwapp_transport_header *)pptr;
     ND_TCHECK(*lwapp_trans_header);
 

@@ -124,7 +124,9 @@ struct netdissect_options {
   int ndo_Wflag;          /* recycle output files after this number of files */
   int ndo_WflagChars;
   int ndo_Hflag;		/* dissect 802.11s draft mesh standard */
+  int ndo_packet_number;	/* print a packet number in the beginning of line */
   int ndo_suppress_default_print; /* don't use default_print() for unknown packet types */
+  int ndo_tstamp_precision;   /* requested time stamp precision */
   const char *ndo_dltname;
 
   char *ndo_espsecret;
@@ -207,12 +209,26 @@ struct netdissect_options {
  * Maximum snapshot length.  This should be enough to capture the full
  * packet on most network interfaces.
  *
- * XXX - could it be larger?  If so, should it?  Some applications might
- * use the snapshot length in a savefile header to control the size of
- * the buffer they allocate, so a size of, say, 2^31-1 might not work
- * well.
+ *
+ * Somewhat arbitrary, but chosen to be:
+ *
+ *    1) big enough for maximum-size Linux loopback packets (65549)
+ *       and some USB packets captured with USBPcap:
+ *
+ *           http://desowin.org/usbpcap/
+ *
+ *       (> 131072, < 262144)
+ *
+ * and
+ *
+ *    2) small enough not to cause attempts to allocate huge amounts of
+ *       memory; some applications might use the snapshot length in a
+ *       savefile header to control the size of the buffer they allocate,
+ *       so a size of, say, 2^31-1 might not work well.
+ *
+ * XXX - does it need to be bigger still?
  */
-#define MAXIMUM_SNAPLEN	65535
+#define MAXIMUM_SNAPLEN	262144
 
 /*
  * The default snapshot length is the maximum.
@@ -512,8 +528,8 @@ extern void print_data(netdissect_options *, const unsigned char *, int);
 extern void decnet_print(netdissect_options *, const u_char *, u_int, u_int);
 extern void tcp_print(netdissect_options *, const u_char *, u_int, const u_char *, int);
 extern void ospf_print(netdissect_options *, const u_char *, u_int, const u_char *);
-extern int ospf_print_te_lsa(netdissect_options *, const u_int8_t *, u_int);
-extern int ospf_print_grace_lsa(netdissect_options *, const u_int8_t *, u_int);
+extern int ospf_print_te_lsa(netdissect_options *, const uint8_t *, u_int);
+extern int ospf_print_grace_lsa(netdissect_options *, const uint8_t *, u_int);
 extern u_int ppp_print(netdissect_options *, register const u_char *, u_int);
 extern u_int ppp_if_print(netdissect_options *, const struct pcap_pkthdr *, const u_char *);
 extern u_int ppp_hdlc_if_print(netdissect_options *, const struct pcap_pkthdr *, const u_char *);
@@ -521,6 +537,8 @@ extern u_int ppp_bsdos_if_print(netdissect_options *, const struct pcap_pkthdr *
 extern void lldp_print(netdissect_options *, const u_char *, u_int);
 extern void rsvp_print(netdissect_options *, const u_char *, u_int);
 extern void timed_print(netdissect_options *, const u_char *);
+extern void m3ua_print(netdissect_options *, const u_char *, const u_int);
+extern void aoe_print(netdissect_options *, const u_char *, const u_int);
 
 /* stuff that has not yet been rototiled */
 
@@ -528,7 +546,7 @@ extern void timed_print(netdissect_options *, const u_char *);
 extern void ascii_print(netdissect_options *,u_int);
 extern void default_print(netdissect_options *,const u_char *, u_int);
 extern char *smb_errstr(netdissect_options *,int, int);
-extern const char *nt_errstr(netdissect_options *, u_int32_t);
+extern const char *nt_errstr(netdissect_options *, uint32_t);
 #endif
 
 extern u_int ipnet_if_print(netdissect_options *,const struct pcap_pkthdr *, const u_char *);
@@ -556,13 +574,13 @@ extern void babel_print(netdissect_options *, const u_char *, u_int);
 
 #if 0
 struct cksum_vec {
-	const u_int8_t	*ptr;
+	const uint8_t	*ptr;
 	int		len;
 };
-extern u_int16_t in_cksum(const struct cksum_vec *, int);
-extern u_int16_t in_cksum_shouldbe(u_int16_t, u_int16_t);
+extern uint16_t in_cksum(const struct cksum_vec *, int);
+extern uint16_t in_cksum_shouldbe(uint16_t, uint16_t);
 #endif
-extern int nextproto4_cksum(netdissect_options *ndo, const struct ip *, const u_int8_t *, u_int, u_int, u_int);
+extern int nextproto4_cksum(netdissect_options *ndo, const struct ip *, const uint8_t *, u_int, u_int, u_int);
 extern int decode_prefix4(netdissect_options *ndo, const u_char *, u_int, char *, u_int);
 #ifdef INET6
 extern int decode_prefix6(netdissect_options *ndo, const u_char *, u_int, char *, u_int);

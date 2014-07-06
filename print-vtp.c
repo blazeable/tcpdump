@@ -45,13 +45,13 @@
 #define VTP_JOIN_MESSAGE		0x04
 
 struct vtp_vlan_ {
-    u_int8_t  len;
-    u_int8_t  status;
-    u_int8_t  type;
-    u_int8_t  name_len;
-    u_int16_t vlanid;
-    u_int16_t mtu;
-    u_int32_t index;
+    uint8_t  len;
+    uint8_t  status;
+    uint8_t  type;
+    uint8_t  name_len;
+    uint16_t vlanid;
+    uint16_t mtu;
+    uint32_t index;
 };
 
 static const struct tok vtp_message_type_values[] = {
@@ -130,8 +130,7 @@ vtp_print (netdissect_options *ndo,
 
     tptr = pptr;
 
-    if (!ND_TTEST2(*tptr, VTP_HEADER_LEN))
-	goto trunc;
+    ND_TCHECK2(*tptr, VTP_HEADER_LEN);
 
     type = *(tptr+1);
     ND_PRINT((ndo, "VTPv%u, Message %s (0x%02x), length %u",
@@ -240,8 +239,7 @@ vtp_print (netdissect_options *ndo,
 	    if (len == 0)
 		break;
 
-	    if (!ND_TTEST2(*tptr, len))
-		goto trunc;
+	    ND_TCHECK2(*tptr, len);
 
 	    vtp_vlan = (struct vtp_vlan_*)tptr;
 	    ND_PRINT((ndo, "\n\tVLAN info status %s, type %s, VLAN-id %u, MTU %u, SAID 0x%08x, Name %s",
@@ -280,8 +278,7 @@ vtp_print (netdissect_options *ndo,
                     return;
                 }
 
-                if (!ND_TTEST2(*tptr, tlv_len*2 +2))
-                    goto trunc;
+                ND_TCHECK2(*tptr, tlv_len * 2 +2);
 
                 tlv_value = EXTRACT_16BITS(tptr+2);
 
