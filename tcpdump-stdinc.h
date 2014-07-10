@@ -123,6 +123,7 @@
 #define PRIo64		"llo"
 #endif
 
+#ifndef PRIu64
 #define PRIu64		"llu"
 #endif
 
@@ -139,6 +140,7 @@
 #define read _read
 #define close _close
 #define O_RDONLY _O_RDONLY
+#endif  /* _MSC_VER */
 
 /* Protos for missing/x.c functions (ideally <missing/addrinfo.h>
  * should be used, but it clashes with <ws2tcpip.h>).
