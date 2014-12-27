@@ -231,6 +231,8 @@ decnet		DECnet_Phone.pcap	decnet.out	-t
 
 # RADIUS tests
 radius-v	RADIUS.pcap	radius-v.out	-t -v
+radius-rfc4675	RADIUS-RFC4675.pcap	radius-rfc4675-v.out	-t -v
+radius-rfc5176	RADIUS-RFC5176.pcap	radius-rfc5176-v.out	-t -v
 
 # link-level protocols
 dtp-v		DTP.pcap		dtp-v.out		-t -v
@@ -255,3 +257,10 @@ isis_4-v	ISIS_p2p_adjacency.pcap		isis_4-v.out	-t -v
 # ATA-over-Ethernet tests
 aoe_1		AoE_Linux.pcap		aoe_1.out	-t
 aoe_1-v		AoE_Linux.pcap		aoe_1-v.out	-t -v
+
+# Geneve tests
+geneve-v	geneve.pcap		geneve-vv.out	-t -vv
+
+# DHCP tests
+dhcp-rfc3004	dhcp-rfc3004.pcap	dhcp-rfc3004-v.out	-t -v
+dhcp-rfc5859	dhcp-rfc5859.pcap	dhcp-rfc5859-v.out	-t -v

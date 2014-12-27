@@ -44,6 +44,8 @@ struct udphdr {
 	uint16_t	uh_sum;			/* udp checksum */
 };
 
+#define BOOTPS_PORT 67		/* RFC951 */
+#define BOOTPC_PORT 68		/* RFC951 */
 #define TFTP_PORT 69		/*XXX*/
 #define KERBEROS_PORT 88	/*XXX*/
 #define SUNRPC_PORT 111		/*XXX*/
@@ -72,6 +74,7 @@ struct udphdr {
 #define RADIUS_NEW_PORT 1812
 #define RADIUS_ACCOUNTING_PORT 1646
 #define RADIUS_NEW_ACCOUNTING_PORT 1813
+#define RADIUS_COA_PORT 3799
 #define HSRP_PORT 1985		/*XXX*/
 #define LMP_PORT                701 /* rfc4204 */
 #define LWRES_PORT		921
@@ -88,6 +91,7 @@ struct udphdr {
 #define LWAPP_CONTROL_PORT      12223 /* draft-ohara-capwap-lwapp-04.txt */
 #define OTV_PORT                8472  /* draft-hasmit-otv-04 */
 #define VXLAN_PORT              4789  /* draft-mahalingam-dutt-dcops-vxlan-04 */
+#define GENEVE_PORT             6081  /* draft-gross-geneve-02 */
 
 #ifdef INET6
 #define RIPNG_PORT 521		/*XXX*/

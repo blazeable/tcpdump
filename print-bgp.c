@@ -530,7 +530,7 @@ decode_labeled_prefix4(netdissect_options *ndo,
            is added to the prefix length;
            we also do only read out just one label -
            there is no real application for advertisement of
-           stacked labels in a a single BGP message
+           stacked labels in a single BGP message
         */
 
 	if (24 > plen)
@@ -716,8 +716,10 @@ decode_rt_routing_info(netdissect_options *ndo,
 	ND_TCHECK(pptr[0]);
 	plen = pptr[0];   /* get prefix length */
 
-	if (0 == plen)
-		return 1; /* default route target */
+	if (0 == plen) {
+		snprintf(buf, buflen, "default route target");
+		return 1;
+	}
 
 	if (32 > plen)
 		return -1;
@@ -2715,7 +2717,7 @@ bgp_print(netdissect_options *ndo,
 	if (ndo->ndo_snapend < dat + length)
 		ep = ndo->ndo_snapend;
 
-	ND_PRINT((ndo, ": BGP, length: %u", length));
+	ND_PRINT((ndo, ": BGP"));
 
         if (ndo->ndo_vflag < 1) /* lets be less chatty */
                 return;

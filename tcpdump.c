@@ -43,6 +43,17 @@ The Regents of the University of California.  All rights reserved.\n";
 #include "config.h"
 #endif
 
+/*
+ * Mac OS X may ship pcap.h from libpcap 0.6 with a libpcap based on
+ * 0.8.  That means it has pcap_findalldevs() but the header doesn't
+ * define pcap_if_t, meaning that we can't actually *use* pcap_findalldevs().
+ */
+#ifdef HAVE_PCAP_FINDALLDEVS
+#ifndef HAVE_PCAP_IF_T
+#undef HAVE_PCAP_FINDALLDEVS
+#endif
+#endif
+
 #include <tcpdump-stdinc.h>
 
 #ifdef WIN32
@@ -53,7 +64,7 @@ extern int SIZE_BUF;
 #define uint UINT
 #endif /* WIN32 */
 
-#ifdef HAVE_SMI_H
+#ifdef USE_LIBSMI
 #include <smi.h>
 #endif
 
@@ -72,6 +83,13 @@ extern int SIZE_BUF;
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#ifdef HAVE_CAPSICUM
+#include <sys/capability.h>
+#include <sys/ioccom.h>
+#include <net/bpf.h>
+#include <fcntl.h>
+#include <libgen.h>
+#endif	/* HAVE_CAPSICUM */
 #ifndef WIN32
 #include <sys/wait.h>
 #include <sys/resource.h>
@@ -441,6 +459,9 @@ struct dump_info {
 	char	*CurrentFileName;
 	pcap_t	*pd;
 	pcap_dumper_t *p;
+#ifdef HAVE_CAPSICUM
+	int	dirfd;
+#endif
 };
 
 #ifdef HAVE_PCAP_SET_TSTAMP_TYPE
@@ -605,12 +626,6 @@ show_devices_and_exit (void)
 #endif /* PCAP_ERROR_TSTAMP_TYPE_NOTSUP */
 
 #ifdef HAVE_PCAP_FINDALLDEVS
-#ifndef HAVE_PCAP_IF_T
-#undef HAVE_PCAP_FINDALLDEVS
-#endif
-#endif
-
-#ifdef HAVE_PCAP_FINDALLDEVS
 #define D_FLAG	"D"
 #else
 #define D_FLAG
@@ -648,9 +663,8 @@ show_devices_and_exit (void)
  * component of the entry for the long option, and have a case for that
  * option in the switch statement.
  */
-#define OPTION_NUMBER		128
-#define OPTION_VERSION		129
-#define OPTION_TSTAMP_PRECISION	130
+#define OPTION_VERSION		128
+#define OPTION_TSTAMP_PRECISION	129
 
 static const struct option longopts[] = {
 #if defined(HAVE_PCAP_CREATE) || defined(WIN32)
@@ -686,7 +700,7 @@ static const struct option longopts[] = {
 	{ "debug-filter-parser", no_argument, NULL, 'Y' },
 #endif
 	{ "relinquish-privileges", required_argument, NULL, 'Z' },
-	{ "number", no_argument, NULL, OPTION_NUMBER },
+	{ "number", no_argument, NULL, '#' },
 	{ "version", no_argument, NULL, OPTION_VERSION },
 	{ NULL, 0, NULL, 0 }
 };
@@ -910,6 +924,11 @@ main(int argc, char **argv)
 #endif
 	int status;
 	FILE *VFile;
+#ifdef HAVE_CAPSICUM
+	cap_rights_t rights;
+	int cansandbox;
+#endif	/* HAVE_CAPSICUM */
+
 #ifdef WIN32
 	if(wsockinit() != 0) return 1;
 #endif /* WIN32 */
@@ -937,15 +956,22 @@ main(int argc, char **argv)
 	else
 		program_name = argv[0];
 
+	/*
+	 * On platforms where the CPU doesn't support unaligned loads,
+	 * force unaligned accesses to abort with SIGBUS, rather than
+	 * being fixed up (slowly) by the OS kernel; on those platforms,
+	 * misaligned accesses are bugs, and we want tcpdump to crash so
+	 * that the bugs are reported.
+	 */
 	if (abort_on_misalignment(ebuf, sizeof(ebuf)) < 0)
 		error("%s", ebuf);
 
-#ifdef LIBSMI
+#ifdef USE_LIBSMI
 	smiInit("tcpdump");
 #endif
 
 	while (
-	    (op = getopt_long(argc, argv, "aAb" B_FLAG "c:C:d" D_FLAG "eE:fF:G:hHi:" I_FLAG j_FLAG J_FLAG "KlLm:M:nNOpq" Q_FLAG "r:Rs:StT:u" U_FLAG "vV:w:W:xXy:Yz:Z:", longopts, NULL)) != -1)
+	    (op = getopt_long(argc, argv, "aAb" B_FLAG "c:C:d" D_FLAG "eE:fF:G:hHi:" I_FLAG j_FLAG J_FLAG "KlLm:M:nNOpq" Q_FLAG "r:Rs:StT:u" U_FLAG "vV:w:W:xXy:Yz:Z:#", longopts, NULL)) != -1)
 		switch (op) {
 
 		case 'a':
@@ -1121,7 +1147,7 @@ main(int argc, char **argv)
 			break;
 
 		case 'm':
-#ifdef LIBSMI
+#ifdef USE_LIBSMI
 			if (smiLoadModule(optarg) == 0) {
 				error("could not load MIB module %s", optarg);
 			}
@@ -1306,7 +1332,7 @@ main(int argc, char **argv)
 			username = strdup(optarg);
 			break;
 
-		case OPTION_NUMBER:
+		case '#':
 			gndo->ndo_packet_number = 1;
 			break;
 
@@ -1423,6 +1449,13 @@ main(int argc, char **argv)
 
 		if (pd == NULL)
 			error("%s", ebuf);
+#ifdef HAVE_CAPSICUM
+		cap_rights_init(&rights, CAP_READ);
+		if (cap_rights_limit(fileno(pcap_file(pd)), &rights) < 0 &&
+		    errno != ENOSYS) {
+			error("unable to limit pcap descriptor");
+		}
+#endif
 		dlt = pcap_datalink(pd);
 		dlt_name = pcap_datalink_val_to_name(dlt);
 		if (dlt_name == NULL) {
@@ -1687,6 +1720,21 @@ main(int argc, char **argv)
 
 	if (pcap_setfilter(pd, &fcode) < 0)
 		error("%s", pcap_geterr(pd));
+#ifdef HAVE_CAPSICUM
+	if (RFileName == NULL && VFileName == NULL) {
+		static const unsigned long cmds[] = { BIOCGSTATS };
+
+		cap_rights_init(&rights, CAP_IOCTL, CAP_READ);
+		if (cap_rights_limit(pcap_fileno(pd), &rights) < 0 &&
+		    errno != ENOSYS) {
+			error("unable to limit pcap descriptor");
+		}
+		if (cap_ioctls_limit(pcap_fileno(pd), cmds,
+		    sizeof(cmds) / sizeof(cmds[0])) < 0 && errno != ENOSYS) {
+			error("unable to limit ioctls on pcap descriptor");
+		}
+	}
+#endif
 	if (WFileName) {
 		pcap_dumper_t *p;
 		/* Do not exceed the default PATH_MAX for files. */
@@ -1708,9 +1756,32 @@ main(int argc, char **argv)
 #endif
 		if (p == NULL)
 			error("%s", pcap_geterr(pd));
+#ifdef HAVE_CAPSICUM
+		cap_rights_init(&rights, CAP_SEEK, CAP_WRITE);
+		if (cap_rights_limit(fileno(pcap_dump_file(p)), &rights) < 0 &&
+		    errno != ENOSYS) {
+			error("unable to limit dump descriptor");
+		}
+#endif
 		if (Cflag != 0 || Gflag != 0) {
-			callback = dump_packet_and_trunc;
+#ifdef HAVE_CAPSICUM
+			dumpinfo.WFileName = strdup(basename(WFileName));
+			dumpinfo.dirfd = open(dirname(WFileName),
+			    O_DIRECTORY | O_RDONLY);
+			if (dumpinfo.dirfd < 0) {
+				error("unable to open directory %s",
+				    dirname(WFileName));
+			}
+			cap_rights_init(&rights, CAP_CREATE, CAP_FCNTL,
+			    CAP_FTRUNCATE, CAP_LOOKUP, CAP_SEEK, CAP_WRITE);
+			if (cap_rights_limit(dumpinfo.dirfd, &rights) < 0 &&
+			    errno != ENOSYS) {
+				error("unable to limit directory rights");
+			}
+#else	/* !HAVE_CAPSICUM */
 			dumpinfo.WFileName = WFileName;
+#endif
+			callback = dump_packet_and_trunc;
 			dumpinfo.pd = pd;
 			dumpinfo.p = p;
 			pcap_userdata = (u_char *)&dumpinfo;
@@ -1780,6 +1851,15 @@ main(int argc, char **argv)
 		(void)fflush(stderr);
 	}
 #endif /* WIN32 */
+
+#ifdef HAVE_CAPSICUM
+	cansandbox = (nflag && VFileName == NULL && zflag == NULL);
+	if (cansandbox && cap_enter() < 0 && errno != ENOSYS)
+		error("unable to enter the capability mode");
+	if (cap_sandboxed())
+		fprintf(stderr, "capability mode sandbox enabled\n");
+#endif	/* HAVE_CAPSICUM */
+
 	do {
 		status = pcap_loop(pd, cnt, callback, pcap_userdata);
 		if (WFileName == NULL) {
@@ -1827,6 +1907,13 @@ main(int argc, char **argv)
 				pd = pcap_open_offline(RFileName, ebuf);
 				if (pd == NULL)
 					error("%s", ebuf);
+#ifdef HAVE_CAPSICUM
+				cap_rights_init(&rights, CAP_READ);
+				if (cap_rights_limit(fileno(pcap_file(pd)),
+				    &rights) < 0 && errno != ENOSYS) {
+					error("unable to limit pcap descriptor");
+				}
+#endif
 				new_dlt = pcap_datalink(pd);
 				if (WFileName && new_dlt != dlt)
 					error("%s: new dlt does not match original", RFileName);
@@ -1995,6 +2082,9 @@ static void
 dump_packet_and_trunc(u_char *user, const struct pcap_pkthdr *h, const u_char *sp)
 {
 	struct dump_info *dump_info;
+#ifdef HAVE_CAPSICUM
+	cap_rights_t rights;
+#endif
 
 	++packets_captured;
 
@@ -2023,6 +2113,11 @@ dump_packet_and_trunc(u_char *user, const struct pcap_pkthdr *h, const u_char *s
 
 		/* If the time is greater than the specified window, rotate */
 		if (t - Gflag_time >= Gflag) {
+#ifdef HAVE_CAPSICUM
+			FILE *fp;
+			int fd;
+#endif
+
 			/* Update the Gflag_time */
 			Gflag_time = t;
 			/* Update Gflag_count */
@@ -2076,13 +2171,36 @@ dump_packet_and_trunc(u_char *user, const struct pcap_pkthdr *h, const u_char *s
 			capng_update(CAPNG_ADD, CAPNG_EFFECTIVE, CAP_DAC_OVERRIDE);
 			capng_apply(CAPNG_EFFECTIVE);
 #endif /* HAVE_CAP_NG_H */
+#ifdef HAVE_CAPSICUM
+			fd = openat(dump_info->dirfd,
+			    dump_info->CurrentFileName,
+			    O_CREAT | O_WRONLY | O_TRUNC, 0644);
+			if (fd < 0) {
+				error("unable to open file %s",
+				    dump_info->CurrentFileName);
+			}
+			fp = fdopen(fd, "w");
+			if (fp == NULL) {
+				error("unable to fdopen file %s",
+				    dump_info->CurrentFileName);
+			}
+			dump_info->p = pcap_dump_fopen(dump_info->pd, fp);
+#else	/* !HAVE_CAPSICUM */
 			dump_info->p = pcap_dump_open(dump_info->pd, dump_info->CurrentFileName);
+#endif
 #ifdef HAVE_CAP_NG_H
 			capng_update(CAPNG_DROP, CAPNG_EFFECTIVE, CAP_DAC_OVERRIDE);
 			capng_apply(CAPNG_EFFECTIVE);
 #endif /* HAVE_CAP_NG_H */
 			if (dump_info->p == NULL)
 				error("%s", pcap_geterr(pd));
+#ifdef HAVE_CAPSICUM
+			cap_rights_init(&rights, CAP_SEEK, CAP_WRITE);
+			if (cap_rights_limit(fileno(pcap_dump_file(dump_info->p)),
+			    &rights) < 0 && errno != ENOSYS) {
+				error("unable to limit dump descriptor");
+			}
+#endif
 		}
 	}
 
@@ -2092,6 +2210,11 @@ dump_packet_and_trunc(u_char *user, const struct pcap_pkthdr *h, const u_char *s
 	 * file could put it over Cflag.
 	 */
 	if (Cflag != 0 && pcap_dump_ftell(dump_info->p) > Cflag) {
+#ifdef HAVE_CAPSICUM
+		FILE *fp;
+		int fd;
+#endif
+
 		/*
 		 * Close the current file and open a new one.
 		 */
@@ -2114,9 +2237,31 @@ dump_packet_and_trunc(u_char *user, const struct pcap_pkthdr *h, const u_char *s
 		if (dump_info->CurrentFileName == NULL)
 			error("dump_packet_and_trunc: malloc");
 		MakeFilename(dump_info->CurrentFileName, dump_info->WFileName, Cflag_count, WflagChars);
+#ifdef HAVE_CAPSICUM
+		fd = openat(dump_info->dirfd, dump_info->CurrentFileName,
+		    O_CREAT | O_WRONLY | O_TRUNC, 0644);
+		if (fd < 0) {
+			error("unable to open file %s",
+			    dump_info->CurrentFileName);
+		}
+		fp = fdopen(fd, "w");
+		if (fp == NULL) {
+			error("unable to fdopen file %s",
+			    dump_info->CurrentFileName);
+		}
+		dump_info->p = pcap_dump_fopen(dump_info->pd, fp);
+#else	/* !HAVE_CAPSICUM */
 		dump_info->p = pcap_dump_open(dump_info->pd, dump_info->CurrentFileName);
+#endif
 		if (dump_info->p == NULL)
 			error("%s", pcap_geterr(pd));
+#ifdef HAVE_CAPSICUM
+		cap_rights_init(&rights, CAP_SEEK, CAP_WRITE);
+		if (cap_rights_limit(fileno(pcap_dump_file(dump_info->p)),
+		    &rights) < 0 && errno != ENOSYS) {
+			error("unable to limit dump descriptor");
+		}
+#endif
 	}
 
 	pcap_dump((u_char *)dump_info->p, h, sp);
@@ -2170,7 +2315,8 @@ print_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *sp)
 	/*
 	 * Some printers want to check that they're not walking off the
 	 * end of the packet.
-	 * Rather than pass it all the way down, we set this global.
+	 * Rather than pass it all the way down, we set this member
+	 * of the netdissect_options structure.
 	 */
 	ndo->ndo_snapend = sp + h->caplen;
 
@@ -2180,6 +2326,11 @@ print_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *sp)
                 hdrlen = (*print_info->p.printer)(h, sp);
         }
 
+	/*
+	 * Restore the original snapend, as a printer might have
+	 * changed it.
+	 */
+	ndo->ndo_snapend = sp + h->caplen;
 	if (ndo->ndo_Xflag) {
 		/*
 		 * Print the raw packet data in hex and ASCII.
@@ -2278,7 +2429,7 @@ print_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *sp)
 static void
 ndo_default_print(netdissect_options *ndo, const u_char *bp, u_int length)
 {
-	hex_and_ascii_print(ndo, "\n\t", bp, length); /* pass on lf and identation string */
+	hex_and_ascii_print(ndo, "\n\t", bp, length); /* pass on lf and indentation string */
 }
 
 void
@@ -2354,7 +2505,7 @@ print_version(void)
 	(void)fprintf (stderr, "%s\n", SSLeay_version(SSLEAY_VERSION));
 #endif
 
-#if defined(HAVE_SMI_H)
+#ifdef USE_LIBSMI
 	(void)fprintf (stderr, "SMI-library: %s\n", smi_version_string);
 #endif
 }
@@ -2365,7 +2516,7 @@ print_usage(void)
 {
 	print_version();
 	(void)fprintf(stderr,
-"Usage: %s [-aAbd" D_FLAG "efhH" I_FLAG J_FLAG "KlLnNOpqRStu" U_FLAG "vxX]" B_FLAG_USAGE " [ -c count ]\n", program_name);
+"Usage: %s [-aAbd" D_FLAG "efhH" I_FLAG J_FLAG "KlLnNOpqRStu" U_FLAG "vxX#]" B_FLAG_USAGE " [ -c count ]\n", program_name);
 	(void)fprintf(stderr,
 "\t\t[ -C file_size ] [ -E algo:secret ] [ -F file ] [ -G seconds ]\n");
 	(void)fprintf(stderr,

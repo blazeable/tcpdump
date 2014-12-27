@@ -438,25 +438,31 @@ AC_DEFUN(AC_LBL_LIBPCAP,
 		    LIBS="$LIBS $pfopen"
 	    fi
     fi
-    AC_MSG_CHECKING(for local pcap library)
-    libpcap=FAIL
-    lastdir=FAIL
-    places=`ls $srcdir/.. | sed -e 's,/$,,' -e "s,^,$srcdir/../," | \
-	egrep '/libpcap-[[0-9]]+\.[[0-9]]+(\.[[0-9]]*)?([[ab]][[0-9]]*|-PRE-GIT)?$'`
-    for dir in $places $srcdir/../libpcap $srcdir/libpcap ; do
-	    basedir=`echo $dir | sed -e 's/[[ab]][[0-9]]*$//' | \
-	        sed -e 's/-PRE-GIT$//' `
-	    if test $lastdir = $basedir ; then
-		    dnl skip alphas when an actual release is present
-		    continue;
-	    fi
-	    lastdir=$dir
-	    if test -r $dir/libpcap.a ; then
-		    libpcap=$dir/libpcap.a
-		    d=$dir
-		    dnl continue and select the last one that exists
-	    fi
-    done
+	libpcap=FAIL
+	AC_MSG_CHECKING(for local pcap library)
+	AC_ARG_WITH([system-libpcap],
+		[AS_HELP_STRING([--with-system-libpcap], [don't use local pcap library])])
+	if test "x$with_system_libpcap" != xyes ; then
+		lastdir=FAIL
+    	places=`ls $srcdir/.. | sed -e 's,/$,,' -e "s,^,$srcdir/../," | \
+		egrep '/libpcap-[[0-9]]+\.[[0-9]]+(\.[[0-9]]*)?([[ab]][[0-9]]*|-PRE-GIT)?$'`
+    	places2=`ls .. | sed -e 's,/$,,' -e "s,^,../," | \
+		egrep '/libpcap-[[0-9]]+\.[[0-9]]+(\.[[0-9]]*)?([[ab]][[0-9]]*|-PRE-GIT)?$'`
+    	for dir in $places $srcdir/../libpcap ../libpcap $srcdir/libpcap $places2 ; do
+	    	basedir=`echo $dir | sed -e 's/[[ab]][[0-9]]*$//' | \
+	        	sed -e 's/-PRE-GIT$//' `
+	    	if test $lastdir = $basedir ; then
+		    	dnl skip alphas when an actual release is present
+		    	continue;
+	    	fi
+	    	lastdir=$dir
+	    	if test -r $dir/libpcap.a ; then
+		    	libpcap=$dir/libpcap.a
+		    	d=$dir
+		    	dnl continue and select the last one that exists
+	    	fi
+		done
+	fi
     if test $libpcap = FAIL ; then
 	    AC_MSG_RESULT(not found)
 
@@ -526,13 +532,23 @@ AC_DEFUN(AC_LBL_LIBPCAP,
 	    $1=$libpcap
 	    places=`ls $srcdir/.. | sed -e 's,/$,,' -e "s,^,$srcdir/../," | \
     	 		egrep '/libpcap-[[0-9]]*.[[0-9]]*(.[[0-9]]*)?([[ab]][[0-9]]*)?$'`
+	    places2=`ls .. | sed -e 's,/$,,' -e "s,^,../," | \
+    	 		egrep '/libpcap-[[0-9]]*.[[0-9]]*(.[[0-9]]*)?([[ab]][[0-9]]*)?$'`
+            pcapH=FAIL
 	    if test -r $d/pcap.h; then
-		    $2="-I$d $$2"
-	    elif test -r $places/pcap.h; then
-		    $2="-I$places $$2"
+                    pcapH=$d
 	    else
-                    AC_MSG_ERROR(cannot find pcap.h, see INSTALL)
+                for dir in $places $srcdir/../libpcap ../libpcap $srcdir/libpcap $places2 ; do
+                   if test -r $dir/pcap.h ; then
+                       pcapH=$dir
+                   fi
+                done
+            fi
+
+            if test $pcapH = FAIL ; then
+                    AC_MSG_ERROR(cannot find pcap.h: see INSTALL)
  	    fi
+            $2="-I$pcapH $$2"
 	    AC_MSG_RESULT($libpcap)
 	    AC_PATH_PROG(PCAP_CONFIG, pcap-config,, $d)
 	    if test -n "$PCAP_CONFIG"; then
