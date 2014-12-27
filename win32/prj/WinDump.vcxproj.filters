@@ -485,6 +485,21 @@
     <ClCompile Include="..\Src\ether_ntohost.c">
       <Filter>Utility Functions</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\print-ftp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-geneve.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-http.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-rtsp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-smtp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\interface.h" />
@@ -503,9 +518,6 @@
     <ClInclude Include="..\..\atmuni31.h">
       <Filter>Protocol Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\bootp.h">
-      <Filter>Protocol Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\chdlc.h">
       <Filter>Protocol Headers</Filter>
     </ClInclude>
@@ -513,9 +525,6 @@
       <Filter>Protocol Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\ethertype.h">
-      <Filter>Protocol Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\decnet.h">
       <Filter>Protocol Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gmpls.h">

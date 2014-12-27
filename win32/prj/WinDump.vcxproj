@@ -221,9 +221,12 @@
     <ClCompile Include="..\..\print-forces.c" />
     <ClCompile Include="..\..\print-fr.c" />
     <ClCompile Include="..\..\print-frag6.c" />
+    <ClCompile Include="..\..\print-ftp.c" />
+    <ClCompile Include="..\..\print-geneve.c" />
     <ClCompile Include="..\..\print-geonet.c" />
     <ClCompile Include="..\..\print-gre.c" />
     <ClCompile Include="..\..\print-hsrp.c" />
+    <ClCompile Include="..\..\print-http.c" />
     <ClCompile Include="..\..\print-icmp.c" />
     <ClCompile Include="..\..\print-icmp6.c" />
     <ClCompile Include="..\..\print-igmp.c" />
@@ -281,6 +284,7 @@
     <ClCompile Include="..\..\print-rrcp.c" />
     <ClCompile Include="..\..\print-rsvp.c" />
     <ClCompile Include="..\..\print-rt6.c" />
+    <ClCompile Include="..\..\print-rtsp.c" />
     <ClCompile Include="..\..\print-rx.c" />
     <ClCompile Include="..\..\print-sctp.c" />
     <ClCompile Include="..\..\print-sflow.c" />
@@ -289,6 +293,7 @@
     <ClCompile Include="..\..\print-sll.c" />
     <ClCompile Include="..\..\print-slow.c" />
     <ClCompile Include="..\..\print-smb.c" />
+    <ClCompile Include="..\..\print-smtp.c" />
     <ClCompile Include="..\..\print-snmp.c" />
     <ClCompile Include="..\..\print-stp.c" />
     <ClCompile Include="..\..\print-sunatm.c" />
@@ -327,10 +332,8 @@
     <ClInclude Include="..\..\appletalk.h" />
     <ClInclude Include="..\..\atm.h" />
     <ClInclude Include="..\..\atmuni31.h" />
-    <ClInclude Include="..\..\bootp.h" />
     <ClInclude Include="..\..\chdlc.h" />
     <ClInclude Include="..\..\cpack.h" />
-    <ClInclude Include="..\..\decnet.h" />
     <ClInclude Include="..\..\ether.h" />
     <ClInclude Include="..\..\ethertype.h" />
     <ClInclude Include="..\..\extract.h" />
