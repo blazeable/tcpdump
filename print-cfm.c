@@ -17,16 +17,15 @@
  * Original code by Hannes Gredler (hannes@juniper.net)
  */
 
-#define NETDISSECT_REWORKED
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <tcpdump-stdinc.h>
+#include <netdissect-stdinc.h>
 
 #include <stdio.h>
 
-#include "interface.h"
+#include "netdissect.h"
 #include "extract.h"
 #include "ether.h"
 #include "addrtoname.h"
@@ -227,8 +226,8 @@ static const struct tok cfm_tlv_senderid_chassisid_values[] = {
 
 static int
 cfm_mgmt_addr_print(netdissect_options *ndo,
-                    register const u_char *tptr) {
-
+                    register const u_char *tptr)
+{
     u_int mgmt_addr_type;
     u_int hexdump =  FALSE;
 
@@ -250,11 +249,9 @@ cfm_mgmt_addr_print(netdissect_options *ndo,
         ND_PRINT((ndo, ", %s", ipaddr_string(ndo, tptr + 1)));
         break;
 
-#ifdef INET6
     case AFNUM_INET6:
         ND_PRINT((ndo, ", %s", ip6addr_string(ndo, tptr + 1)));
         break;
-#endif
 
     default:
         hexdump = TRUE;
@@ -268,7 +265,8 @@ cfm_mgmt_addr_print(netdissect_options *ndo,
  * The egress-ID string is a 16-Bit string plus a MAC address.
  */
 static const char *
-cfm_egress_id_string(netdissect_options *ndo, register const u_char *tptr) {
+cfm_egress_id_string(netdissect_options *ndo, register const u_char *tptr)
+{
     static char egress_id_buffer[80];
 
     snprintf(egress_id_buffer, sizeof(egress_id_buffer),
@@ -281,8 +279,8 @@ cfm_egress_id_string(netdissect_options *ndo, register const u_char *tptr) {
 
 void
 cfm_print(netdissect_options *ndo,
-          register const u_char *pptr, register u_int length) {
-
+          register const u_char *pptr, register u_int length)
+{
     const struct cfm_common_header_t *cfm_common_header;
     const struct cfm_tlv_header_t *cfm_tlv_header;
     const uint8_t *tptr, *tlv_ptr, *ma_name, *ma_nameformat, *ma_namelength;

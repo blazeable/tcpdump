@@ -29,12 +29,11 @@
  * o BAP support
  */
 
-#define NETDISSECT_REWORKED
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <tcpdump-stdinc.h>
+#include <netdissect-stdinc.h>
 
 #ifdef __bsdi__
 #include <net/slcompress.h>
@@ -43,7 +42,7 @@
 
 #include <stdlib.h>
 
-#include "interface.h"
+#include "netdissect.h"
 #include "extract.h"
 #include "addrtoname.h"
 #include "ppp.h"
@@ -805,8 +804,8 @@ static const struct tok ppp_ml_flag_values[] = {
 
 static void
 handle_mlppp(netdissect_options *ndo,
-             const u_char *p, int length) {
-
+             const u_char *p, int length)
+{
     if (!ndo->ndo_eflag)
         ND_PRINT((ndo, "MLPPP, "));
 

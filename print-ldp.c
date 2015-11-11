@@ -14,14 +14,13 @@
  *  and Steinar Haug (sthaug@nethelp.no)
  */
 
-#define NETDISSECT_REWORKED
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <tcpdump-stdinc.h>
+#include <netdissect-stdinc.h>
 
-#include "interface.h"
+#include "netdissect.h"
 #include "extract.h"
 #include "addrtoname.h"
 
@@ -234,8 +233,8 @@ static int ldp_pdu_print(netdissect_options *, register const u_char *);
 static int
 ldp_tlv_print(netdissect_options *ndo,
               register const u_char *tptr,
-              u_short msg_tlen) {
-
+              u_short msg_tlen)
+{
     struct ldp_tlv_header {
         uint8_t type[2];
         uint8_t length[2];
@@ -284,12 +283,10 @@ ldp_tlv_print(netdissect_options *ndo,
         TLV_TCHECK(4);
         ND_PRINT((ndo, "\n\t      IPv4 Transport Address: %s", ipaddr_string(ndo, tptr)));
         break;
-#ifdef INET6
     case LDP_TLV_IPV6_TRANSPORT_ADDR:
         TLV_TCHECK(16);
         ND_PRINT((ndo, "\n\t      IPv6 Transport Address: %s", ip6addr_string(ndo, tptr)));
         break;
-#endif
     case LDP_TLV_CONFIG_SEQ_NUMBER:
         TLV_TCHECK(4);
         ND_PRINT((ndo, "\n\t      Sequence Number: %u", EXTRACT_32BITS(tptr)));
@@ -311,7 +308,6 @@ ldp_tlv_print(netdissect_options *ndo,
 		tptr+=sizeof(struct in_addr);
 	    }
             break;
-#ifdef INET6
         case AFNUM_INET6:
 	    while(tlv_tlen >= sizeof(struct in6_addr)) {
 		ND_TCHECK2(*tptr, sizeof(struct in6_addr));
@@ -320,7 +316,6 @@ ldp_tlv_print(netdissect_options *ndo,
 		tptr+=sizeof(struct in6_addr);
 	    }
             break;
-#endif
         default:
             /* unknown AF */
             break;
@@ -365,7 +360,6 @@ ldp_tlv_print(netdissect_options *ndo,
 		else
 		    ND_PRINT((ndo, ": IPv4 prefix %s", buf));
 	    }
-#ifdef INET6
 	    else if (af == AFNUM_INET6) {
 		i=decode_prefix6(ndo, tptr, tlv_tlen, buf, sizeof(buf));
 		if (i == -2)
@@ -377,7 +371,6 @@ ldp_tlv_print(netdissect_options *ndo,
 		else
 		    ND_PRINT((ndo, ": IPv6 prefix %s", buf));
 	    }
-#endif
 	    else
 		ND_PRINT((ndo, ": Address family %u prefix", af));
 	    break;
@@ -545,8 +538,8 @@ badtlv:
 
 void
 ldp_print(netdissect_options *ndo,
-          register const u_char *pptr, register u_int len) {
-
+          register const u_char *pptr, register u_int len)
+{
     int processed;
     while (len > (sizeof(struct ldp_common_header) + sizeof(struct ldp_msg_header))) {
         processed = ldp_pdu_print(ndo, pptr);
@@ -559,8 +552,8 @@ ldp_print(netdissect_options *ndo,
 
 static int
 ldp_pdu_print(netdissect_options *ndo,
-              register const u_char *pptr) {
-
+              register const u_char *pptr)
+{
     const struct ldp_common_header *ldp_com_header;
     const struct ldp_msg_header *ldp_msg_header;
     const u_char *tptr,*msg_tptr;

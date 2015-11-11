@@ -33,20 +33,17 @@
  * SUCH DAMAGE.
  */
 
-#define NETDISSECT_REWORKED
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <tcpdump-stdinc.h>
+#include <netdissect-stdinc.h>
 
-#include "interface.h"
+#include "netdissect.h"
 #include "addrtoname.h"
-#include "extract.h"			/* must come after interface.h */
+#include "extract.h"
 #include "ip.h"
-#ifdef INET6
 #include "ip6.h"
-#endif
 
 /* Definitions from:
  *
@@ -498,9 +495,7 @@ void sctp_print(netdissect_options *ndo,
 {
   const struct sctpHeader *sctpPktHdr;
   const struct ip *ip;
-#ifdef INET6
   const struct ip6_hdr *ip6;
-#endif
   const void *endPacketPtr;
   u_short sourcePort, destPort;
   int chunkCount;
@@ -515,13 +510,11 @@ void sctp_print(netdissect_options *ndo,
 
   if( (u_long) endPacketPtr > (u_long) ndo->ndo_snapend)
     endPacketPtr = (const void *) ndo->ndo_snapend;
-  ip = (struct ip *)bp2;
-#ifdef INET6
+  ip = (const struct ip *)bp2;
   if (IP_V(ip) == 6)
     ip6 = (const struct ip6_hdr *)bp2;
   else
     ip6 = NULL;
-#endif /*INET6*/
   ND_TCHECK(*sctpPktHdr);
 
   if (sctpPacketLength < sizeof(struct sctpHeader))
@@ -537,7 +530,6 @@ void sctp_print(netdissect_options *ndo,
   sourcePort = EXTRACT_16BITS(&sctpPktHdr->source);
   destPort = EXTRACT_16BITS(&sctpPktHdr->destination);
 
-#ifdef INET6
   if (ip6) {
     ND_PRINT((ndo, "%s.%d > %s.%d: sctp",
       ip6addr_string(ndo, &ip6->ip6_src),
@@ -545,7 +537,6 @@ void sctp_print(netdissect_options *ndo,
       ip6addr_string(ndo, &ip6->ip6_dst),
       destPort));
   } else
-#endif /*INET6*/
   {
     ND_PRINT((ndo, "%s.%d > %s.%d: sctp",
       ipaddr_string(ndo, &ip->ip_src),
@@ -589,7 +580,7 @@ void sctp_print(netdissect_options *ndo,
         break;
       }
 
-      ND_TCHECK2(*((uint8_t *)chunkDescPtr), chunkLength);
+      ND_TCHECK2(*((const uint8_t *)chunkDescPtr), chunkLength);
       chunkEnd = ((const u_char*)chunkDescPtr + chunkLength);
 
       align=chunkLength % 4;

@@ -22,14 +22,13 @@
  * Original code ode by Carles Kishimoto <carles.kishimoto@gmail.com>
  */
 
-#define NETDISSECT_REWORKED
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <tcpdump-stdinc.h>
+#include <netdissect-stdinc.h>
 
-#include "interface.h"
+#include "netdissect.h"
 #include "addrtoname.h"
 #include "extract.h"
 
@@ -136,7 +135,7 @@ vtp_print (netdissect_options *ndo,
     ND_PRINT((ndo, "VTPv%u, Message %s (0x%02x), length %u",
 	   *tptr,
 	   tok2str(vtp_message_type_values,"Unknown message type", type),
-	   *(tptr+1),
+	   type,
 	   length));
 
     /* In non-verbose mode, just print version and message type */
@@ -145,9 +144,10 @@ vtp_print (netdissect_options *ndo,
     }
 
     /* verbose mode print all fields */
-    ND_PRINT((ndo, "\n\tDomain name: %s, %s: %u",
-	   (tptr+4),
-	   tok2str(vtp_header_values,"Unknown",*(tptr+1)),
+    ND_PRINT((ndo, "\n\tDomain name: "));
+    fn_printzp(ndo, tptr + 4, *(tptr + 3), NULL);
+    ND_PRINT((ndo, ", %s: %u",
+	   tok2str(vtp_header_values, "Unknown", type),
 	   *(tptr+2)));
 
     tptr += VTP_HEADER_LEN;
@@ -163,7 +163,7 @@ vtp_print (netdissect_options *ndo,
 	 *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 	 *  |     Version   |     Code      |    Followers  |    MmgtD Len  |
 	 *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-	 *  |                    Management Domain Name                     |
+	 *  |       Management Domain Name  (zero-padded to 32 bytes)       |
 	 *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 	 *  |                    Configuration revision number              |
 	 *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -202,7 +202,7 @@ vtp_print (netdissect_options *ndo,
 	 *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 	 *  |     Version   |     Code      |   Seq number  |    MmgtD Len  |
 	 *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-	 *  |                    Management Domain Name                     |
+	 *  |       Management Domain Name  (zero-padded to 32 bytes)       |
 	 *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 	 *  |                    Configuration revision number              |
 	 *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -241,14 +241,14 @@ vtp_print (netdissect_options *ndo,
 
 	    ND_TCHECK2(*tptr, len);
 
-	    vtp_vlan = (struct vtp_vlan_*)tptr;
-	    ND_PRINT((ndo, "\n\tVLAN info status %s, type %s, VLAN-id %u, MTU %u, SAID 0x%08x, Name %s",
+	    vtp_vlan = (const struct vtp_vlan_*)tptr;
+	    ND_PRINT((ndo, "\n\tVLAN info status %s, type %s, VLAN-id %u, MTU %u, SAID 0x%08x, Name ",
 		   tok2str(vtp_vlan_status,"Unknown",vtp_vlan->status),
 		   tok2str(vtp_vlan_type_values,"Unknown",vtp_vlan->type),
 		   EXTRACT_16BITS(&vtp_vlan->vlanid),
 		   EXTRACT_16BITS(&vtp_vlan->mtu),
-		   EXTRACT_32BITS(&vtp_vlan->index),
-		   (tptr + VTP_VLAN_INFO_OFFSET)));
+		   EXTRACT_32BITS(&vtp_vlan->index)));
+	    fn_printzp(ndo, tptr + VTP_VLAN_INFO_OFFSET, vtp_vlan->name_len, NULL);
 
             /*
              * Vlan names are aligned to 32-bit boundaries.
@@ -340,7 +340,7 @@ vtp_print (netdissect_options *ndo,
 	 *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 	 *  |     Version   |     Code      |   Reserved    |    MmgtD Len  |
 	 *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-	 *  |                    Management Domain Name                     |
+	 *  |       Management Domain Name  (zero-padded to 32 bytes)       |
 	 *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 	 *  |                          Start value                          |
 	 *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

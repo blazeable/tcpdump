@@ -19,17 +19,16 @@
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#define NETDISSECT_REWORKED
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <tcpdump-stdinc.h>
+#include <netdissect-stdinc.h>
 
 #include <stdio.h>
 #include <string.h>
 
-#include "interface.h"
+#include "netdissect.h"
 #include "addrtoname.h"
 #include "ethertype.h"
 #include "llc.h"
@@ -143,7 +142,9 @@ static int parse_q922_addr(netdissect_options *ndo,
 	return 1;
 }
 
-char *q922_string(netdissect_options *ndo, const u_char *p, u_int length) {
+char *
+q922_string(netdissect_options *ndo, const u_char *p, u_int length)
+{
 
     static u_int dlci, addr_len;
     static uint8_t flags[4];
@@ -329,7 +330,7 @@ fr_print(netdissect_options *ndo,
 		break;
 
 	case NLPID_SNAP:
-		if (snap_print(ndo, p, length, length, 0) == 0) {
+		if (snap_print(ndo, p, length, length, NULL, NULL, 0) == 0) {
 			/* ether_type not known, print raw packet */
                         if (!ndo->ndo_eflag)
                             fr_hdr_print(ndo, length + hdr_len, hdr_len,
@@ -591,8 +592,8 @@ mfr_print(netdissect_options *ndo,
 
 static void
 frf15_print(netdissect_options *ndo,
-            const u_char *p, u_int length) {
-
+            const u_char *p, u_int length)
+{
     uint16_t sequence_num, flags;
 
     flags = p[0]&MFR_BEC_MASK;
@@ -764,7 +765,7 @@ q933_print(netdissect_options *ndo,
            const u_char *p, u_int length)
 {
 	const u_char *ptemp = p;
-	struct ie_tlv_header_t  *ie_p;
+	const struct ie_tlv_header_t  *ie_p;
         int olen;
 	int is_ansi = 0;
         u_int codeset;
@@ -812,7 +813,7 @@ q933_print(netdissect_options *ndo,
 
 	/* Loop through the rest of IE */
 	while (length > sizeof(struct ie_tlv_header_t)) {
-		ie_p = (struct ie_tlv_header_t  *)ptemp;
+		ie_p = (const struct ie_tlv_header_t  *)ptemp;
 		if (length < sizeof(struct ie_tlv_header_t) ||
 		    length < sizeof(struct ie_tlv_header_t) + ie_p->ie_len) {
                     if (ndo->ndo_vflag) { /* not bark if there is just a trailer */

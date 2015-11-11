@@ -18,14 +18,13 @@
  * Original code by Hannes Gredler (hannes@juniper.net)
  */
 
-#define NETDISSECT_REWORKED
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <tcpdump-stdinc.h>
+#include <netdissect-stdinc.h>
 
-#include "interface.h"
+#include "netdissect.h"
 #include "extract.h"
 #include "addrtoname.h"
 #include "ether.h"
@@ -249,8 +248,8 @@ const struct slow_common_header_t *slow_com_header;
 
 void
 slow_print(netdissect_options *ndo,
-           register const u_char *pptr, register u_int len) {
-
+           register const u_char *pptr, register u_int len)
+{
     int print_version;
 
     slow_com_header = (const struct slow_common_header_t *)pptr;
@@ -332,8 +331,8 @@ trunc:
 
 static void
 slow_marker_lacp_print(netdissect_options *ndo,
-                       register const u_char *tptr, register u_int tlen) {
-
+                       register const u_char *tptr, register u_int tlen)
+{
     const struct tlv_header_t *tlv_header;
     const u_char *tlv_tptr;
     u_int tlv_len, tlv_tlen;
@@ -450,8 +449,8 @@ trunc:
 
 static void
 slow_oam_print(netdissect_options *ndo,
-               register const u_char *tptr, register u_int tlen) {
-
+               register const u_char *tptr, register u_int tlen)
+{
     u_int hexdump;
 
     struct slow_oam_common_header_t {
@@ -477,7 +476,7 @@ slow_oam_print(netdissect_options *ndo,
         const struct slow_oam_loopbackctrl_t *slow_oam_loopbackctrl;
     } tlv;
 
-    ptr.slow_oam_common_header = (struct slow_oam_common_header_t *)tptr;
+    ptr.slow_oam_common_header = (const struct slow_oam_common_header_t *)tptr;
     tptr += sizeof(struct slow_oam_common_header_t);
     tlen -= sizeof(struct slow_oam_common_header_t);
 
