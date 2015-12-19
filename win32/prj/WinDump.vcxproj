@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -28,49 +28,45 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(SolutionDir)WinPcap.props" />
     <Import Project="WinDump.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(SolutionDir)WinPcap.props" />
     <Import Project="WinDump.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(SolutionDir)WinPcap.props" />
     <Import Project="WinDump.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(SolutionDir)WinPcap.props" />
     <Import Project="WinDump.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -109,7 +105,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(PcapInclDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(WindumpInclDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,7 +147,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\addrtoname.c" />
+    <ClCompile Include="..\..\addrtostr.c" />
     <ClCompile Include="..\..\af.c" />
+    <ClCompile Include="..\..\ascii_strcasecmp.c" />
     <ClCompile Include="..\..\bpf_dump.c" />
     <ClCompile Include="..\..\checksum.c" />
     <ClCompile Include="..\..\cpack.c" />
@@ -164,15 +162,6 @@
     <ClCompile Include="..\..\missing\datalinks.c" />
     <ClCompile Include="..\..\missing\dlnames.c" />
     <ClCompile Include="..\..\missing\getopt_long.c" />
-    <ClCompile Include="..\..\missing\inet_aton.c">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\missing\inet_ntop.c">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\missing\inet_pton.c">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\missing\strlcat.c" />
     <ClCompile Include="..\..\missing\strlcpy.c" />
     <ClCompile Include="..\..\missing\strsep.c" />
@@ -236,6 +225,7 @@
     <ClCompile Include="..\..\print-ip6opts.c" />
     <ClCompile Include="..\..\print-ipcomp.c" />
     <ClCompile Include="..\..\print-ipfc.c" />
+    <ClCompile Include="..\..\print-ipnet.c" />
     <ClCompile Include="..\..\print-ipx.c" />
     <ClCompile Include="..\..\print-isakmp.c" />
     <ClCompile Include="..\..\print-isoclns.c" />
@@ -244,6 +234,7 @@
     <ClCompile Include="..\..\print-l2tp.c" />
     <ClCompile Include="..\..\print-lane.c" />
     <ClCompile Include="..\..\print-ldp.c" />
+    <ClCompile Include="..\..\print-lisp.c" />
     <ClCompile Include="..\..\print-llc.c" />
     <ClCompile Include="..\..\print-lldp.c" />
     <ClCompile Include="..\..\print-lmp.c" />
@@ -252,6 +243,7 @@
     <ClCompile Include="..\..\print-lwapp.c" />
     <ClCompile Include="..\..\print-lwres.c" />
     <ClCompile Include="..\..\print-m3ua.c" />
+    <ClCompile Include="..\..\print-medsa.c" />
     <ClCompile Include="..\..\print-mobile.c" />
     <ClCompile Include="..\..\print-mobility.c" />
     <ClCompile Include="..\..\print-mpcp.c" />
@@ -316,22 +308,24 @@
     <ClCompile Include="..\..\print-wb.c" />
     <ClCompile Include="..\..\print-zephyr.c" />
     <ClCompile Include="..\..\print-zeromq.c" />
+    <ClCompile Include="..\..\print.c" />
     <ClCompile Include="..\..\setsignal.c" />
     <ClCompile Include="..\..\signature.c" />
     <ClCompile Include="..\..\smbutil.c" />
-    <ClCompile Include="..\..\strcasecmp.c" />
+    <ClCompile Include="..\..\strtoaddr.c" />
     <ClCompile Include="..\..\tcpdump.c" />
+    <ClCompile Include="..\..\util-print.c" />
     <ClCompile Include="..\..\util.c" />
     <ClCompile Include="..\Src\ether_ntohost.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\src\getservent.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\addrtoname.h" />
     <ClInclude Include="..\..\ah.h" />
     <ClInclude Include="..\..\appletalk.h" />
     <ClInclude Include="..\..\atm.h" />
-    <ClInclude Include="..\..\atmuni31.h" />
     <ClInclude Include="..\..\chdlc.h" />
     <ClInclude Include="..\..\cpack.h" />
     <ClInclude Include="..\..\ether.h" />
@@ -351,6 +345,7 @@
     <ClInclude Include="..\..\mpls.h" />
     <ClInclude Include="..\..\nameser.h" />
     <ClInclude Include="..\..\netdissect.h" />
+    <ClInclude Include="..\..\netdissect-stdinc.h" />
     <ClInclude Include="..\..\nfs.h" />
     <ClInclude Include="..\..\nfsfh.h" />
     <ClInclude Include="..\..\nlpid.h" />
@@ -366,13 +361,7 @@
     <ClInclude Include="..\..\slcompress.h" />
     <ClInclude Include="..\..\smb.h" />
     <ClInclude Include="..\..\tcp.h" />
-    <ClInclude Include="..\..\tcpdump-stdinc.h" />
     <ClInclude Include="..\..\udp.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\wpcap\PRJ\wpcap.vcxproj">
-      <Project>{20b438da-cbec-4aff-b11c-67b301d14ad5}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

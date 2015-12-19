@@ -57,6 +57,14 @@
 #include <fcntl.h>
 #include <sys/types.h>
 
+/* 
+ * Prototypes for missing functions
+ */
+#ifdef _MSC_VER
+struct servent *getservent(void);
+void endservent(void);
+#endif
+
 #ifndef uint8_t
 #define uint8_t		unsigned char
 #endif

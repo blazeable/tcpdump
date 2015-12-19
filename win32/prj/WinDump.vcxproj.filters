@@ -407,22 +407,10 @@
     <ClCompile Include="..\..\smbutil.c">
       <Filter>Protocol Data</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\missing\inet_aton.c">
-      <Filter>Utility Functions</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\missing\inet_ntop.c">
-      <Filter>Utility Functions</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\missing\inet_pton.c">
-      <Filter>Utility Functions</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\pcap_dump_ftell.c">
       <Filter>Utility Functions</Filter>
     </ClCompile>
     <ClCompile Include="..\..\setsignal.c">
-      <Filter>Utility Functions</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\strcasecmp.c">
       <Filter>Utility Functions</Filter>
     </ClCompile>
     <ClCompile Include="..\..\missing\strlcat.c">
@@ -500,12 +488,38 @@
     <ClCompile Include="..\..\print-smtp.c">
       <Filter>Protocol Printers</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\addrtostr.c">
+      <Filter>Utility Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ascii_strcasecmp.c">
+      <Filter>Utility Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\strtoaddr.c">
+      <Filter>Utility Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-lisp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-medsa.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\util-print.c">
+      <Filter>Utility Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ipnet.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\getservent.c">
+      <Filter>Utility Functions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\interface.h" />
     <ClInclude Include="..\..\netdissect.h" />
     <ClInclude Include="..\..\pcap-missing.h" />
-    <ClInclude Include="..\..\tcpdump-stdinc.h" />
     <ClInclude Include="..\..\appletalk.h">
       <Filter>Protocol Headers</Filter>
     </ClInclude>
@@ -513,9 +527,6 @@
       <Filter>Protocol Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\atm.h">
-      <Filter>Protocol Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\atmuni31.h">
       <Filter>Protocol Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\chdlc.h">
@@ -617,6 +628,7 @@
     <ClInclude Include="..\..\getopt_long.h">
       <Filter>Utility Functions</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\netdissect-stdinc.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Protocol Headers">
