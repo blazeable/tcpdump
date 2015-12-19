@@ -113,7 +113,7 @@ addrtostr6 (const void *src, char *dst, size_t size)
     long len;
   } best, cur;
   u_long words [IN6ADDRSZ / INT16SZ];
-  int    i;
+  u_int  i;
 
   /* Preprocess:
    *  Copy the input (bytewise) array into a wordwise array.
@@ -174,7 +174,6 @@ addrtostr6 (const void *src, char *dst, size_t size)
       if (!addrtostr(srcaddr+12, tp, sizeof(tmp) - (tp - tmp)))
       {
         errno = ENOSPC;
-fprintf(stderr, "Bleah 1\n");
         return (NULL);
       }
       tp += strlen(tp);
@@ -194,7 +193,6 @@ fprintf(stderr, "Bleah 1\n");
   if ((size_t)(tp - tmp) > size)
   {
     errno = ENOSPC;
-fprintf(stderr, "Bleah 2\n");
     return (NULL);
   }
   return strcpy (dst, tmp);

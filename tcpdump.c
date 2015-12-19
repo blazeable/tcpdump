@@ -1119,15 +1119,11 @@ main(int argc, char **argv)
 			break;
 #endif
 		case 'z':
-			zflag = strdup(optarg);
-			if (zflag == NULL)
-				error("Unable to allocate memory for -z argument");
+			zflag = optarg;
 			break;
 
 		case 'Z':
-			username = strdup(optarg);
-			if (username == NULL)
-				error("Unable to allocate memory for -Z argument");
+			username = optarg;
 			break;
 
 		case '#':
@@ -1486,6 +1482,7 @@ main(int argc, char **argv)
 		bpf_dump(&fcode, dflag);
 		pcap_close(pd);
 		free(cmdbuf);
+		pcap_freecode(&fcode);
 		exit(0);
 	}
 	init_print(ndo, localnet, netmask, timezone_offset);
@@ -1782,6 +1779,7 @@ main(int argc, char **argv)
 	while (ret != NULL);
 
 	free(cmdbuf);
+	pcap_freecode(&fcode);
 	exit(status == -1 ? 1 : 0);
 }
 
@@ -1884,17 +1882,31 @@ info(register int verbose)
 }
 
 #if defined(HAVE_FORK) || defined(HAVE_VFORK)
+#ifdef HAVE_FORK
+#define fork_subprocess() fork()
+#else
+#define fork_subprocess() vfork()
+#endif
 static void
 compress_savefile(const char *filename)
 {
-# ifdef HAVE_FORK
-	if (fork())
-# else
-	if (vfork())
-# endif
+	pid_t child;
+
+	child = fork_subprocess();
+	if (child == -1) {
+		fprintf(stderr,
+			"compress_savefile: fork failed: %s\n",
+			pcap_strerror(errno));
 		return;
+	}
+	if (child != 0) {
+		/* Parent process. */
+		return;
+	}
+
 	/*
-	 * Set to lowest priority so that this doesn't disturb the capture
+	 * Child process.
+	 * Set to lowest priority so that this doesn't disturb the capture.
 	 */
 #ifdef NZERO
 	setpriority(PRIO_PROCESS, 0, NZERO - 1);
@@ -1903,15 +1915,15 @@ compress_savefile(const char *filename)
 #endif
 	if (execlp(zflag, zflag, filename, (char *)NULL) == -1)
 		fprintf(stderr,
-			"compress_savefile:execlp(%s, %s): %s\n",
+			"compress_savefile: execlp(%s, %s) failed: %s\n",
 			zflag,
 			filename,
 			pcap_strerror(errno));
-# ifdef HAVE_FORK
+#ifdef HAVE_FORK
 	exit(1);
-# else
+#else
 	_exit(1);
-# endif
+#endif
 }
 #else  /* HAVE_FORK && HAVE_VFORK */
 static void
