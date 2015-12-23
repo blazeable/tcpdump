@@ -1,0 +1,6 @@
+*.sdf
+*.opendb
+*.opensdf
+.vs/
+Debug/
+x64/

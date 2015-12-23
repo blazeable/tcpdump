@@ -1,0 +1,650 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\tcpdump.c" />
+    <ClCompile Include="..\..\print-802_11.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-802_15_4.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ah.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-aodv.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ap1394.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-arcnet.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-arp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ascii.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-atalk.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-atm.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-babel.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-beep.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-bfd.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-bgp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-bootp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-bt.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-calm-fast.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-carp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-cdp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-cfm.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-chdlc.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-cip.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-cnfp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-dccp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-decnet.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-dhcp6.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-domain.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-dtp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-dvmrp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-eap.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-egp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-eigrp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-enc.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-esp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ether.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-fddi.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-forces.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-fr.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-frag6.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-geonet.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-gre.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-hsrp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-icmp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-icmp6.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-igmp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-igrp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ip.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ip6.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ip6opts.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ipcomp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ipfc.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ipx.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-isakmp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-isoclns.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-juniper.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-krb.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-l2tp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-lane.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ldp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-llc.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-lldp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-lmp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-lspping.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-lwapp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-lwres.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-mobile.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-mobility.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-mpcp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-mpls.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-mptcp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-msdp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-msnlb.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-nflog.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-nfs.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ntp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-null.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-olsr.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-openflow.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-openflow-1.0.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ospf.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ospf6.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-otv.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-pgm.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-pim.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ppi.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ppp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-pppoe.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-pptp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-radius.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-raw.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-rip.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ripng.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-rpki-rtr.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-rrcp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-rsvp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-rt6.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-rx.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-sctp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-sflow.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-sip.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-sl.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-sll.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-slow.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-smb.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-snmp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-stp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-sunatm.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-sunrpc.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-symantec.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-syslog.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-tcp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-telnet.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-tftp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-timed.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-tipc.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-token.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-udld.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-udp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-vjc.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-vqp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-vrrp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-vtp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-vxlan.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-wb.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-zephyr.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-zeromq.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ahcp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-loopback.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-pktap.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gmpls.c">
+      <Filter>Protocol Data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\l2vpn.c">
+      <Filter>Protocol Data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ipproto.c">
+      <Filter>Protocol Data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nlpid.c">
+      <Filter>Protocol Data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\parsenfsfh.c">
+      <Filter>Protocol Data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\smbutil.c">
+      <Filter>Protocol Data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\setsignal.c">
+      <Filter>Utility Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gmt2local.c">
+      <Filter>Utility Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\oui.c">
+      <Filter>Protocol Data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\addrtoname.c">
+      <Filter>Utility Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\in_cksum.c">
+      <Filter>Utility Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\signature.c">
+      <Filter>Utility Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\cpack.c">
+      <Filter>Utility Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\af.c">
+      <Filter>Protocol Data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\checksum.c">
+      <Filter>Utility Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\machdep.c">
+      <Filter>Utility Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\util.c">
+      <Filter>Utility Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-aoe.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-m3ua.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ftp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-geneve.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-http.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-rtsp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-smtp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\addrtostr.c">
+      <Filter>Utility Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ascii_strcasecmp.c">
+      <Filter>Utility Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\strtoaddr.c">
+      <Filter>Utility Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-lisp.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-medsa.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\util-print.c">
+      <Filter>Utility Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-ipnet.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\missing\datalinks.c">
+      <Filter>Missing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\missing\strlcat.c">
+      <Filter>Missing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\missing\strlcpy.c">
+      <Filter>Missing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\missing\strsep.c">
+      <Filter>Missing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\bpf_dump.c">
+      <Filter>Missing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\missing\dlnames.c">
+      <Filter>Missing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\missing\getopt_long.c">
+      <Filter>Missing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pcap_dump_ftell.c">
+      <Filter>Missing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\ether_ntohost.c">
+      <Filter>Missing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\getservent.c">
+      <Filter>Missing</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\interface.h" />
+    <ClInclude Include="..\..\netdissect.h" />
+    <ClInclude Include="..\..\pcap-missing.h" />
+    <ClInclude Include="..\..\appletalk.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ah.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\atm.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\chdlc.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ether.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ethertype.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gmpls.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ip6.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ip.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\nameser.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\smb.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\rpc_msg.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\rpc_auth.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ppp.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\slcompress.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tcp.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\udp.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\nfs.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\l2vpn.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ipproto.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\llc.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\oui.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\openflow.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\nfsfh.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\mpls.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ospf.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\nlpid.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\setsignal.h">
+      <Filter>Utility Functions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gmt2local.h">
+      <Filter>Utility Functions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\mib.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\addrtoname.h">
+      <Filter>Utility Functions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\extract.h">
+      <Filter>Utility Functions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\cpack.h">
+      <Filter>Utility Functions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\machdep.h">
+      <Filter>Utility Functions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\rpl.h">
+      <Filter>Protocol Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\netdissect-stdinc.h" />
+    <ClInclude Include="..\..\getopt_long.h">
+      <Filter>Missing</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Protocol Headers">
+      <UniqueIdentifier>{45933152-6096-42cc-94de-975197f1854c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Protocol Printers">
+      <UniqueIdentifier>{6a91f983-2037-435a-b9b7-952c58ad52db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility Functions">
+      <UniqueIdentifier>{a1d77a2f-9c42-46f7-8d06-0ec2d8f34498}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Protocol Data">
+      <UniqueIdentifier>{f356afdc-6af1-4d17-a9e1-8501eaecddf9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Missing">
+      <UniqueIdentifier>{6ee5ce1b-8ea3-49d3-9e17-a1594ce21acb}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
