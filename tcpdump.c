@@ -769,7 +769,7 @@ main(int argc, char **argv)
 #endif
 	struct dump_info dumpinfo;
 	u_char *pcap_userdata;
-	char ebuf[PCAP_ERRBUF_SIZE];
+	char ebuf[PCAP_ERRBUF_SIZE] = "";
 	char VFileLine[PATH_MAX + 1];
 	char *username = NULL;
 	char *chroot_dir = NULL;
@@ -1348,8 +1348,11 @@ main(int argc, char **argv)
 #else /* HAVE_PCAP_FINDALLDEVS */
 			device = pcap_lookupdev(ebuf);
 #endif
-			if (device == NULL)
-				error("%s", ebuf);
+			if (device == NULL) {
+				error("%s", (ebuf[0] != '\0' ?
+					ebuf :
+					"no devices are available for packet capture"));
+			}
 		}
 #ifdef _WIN32
 		/*
