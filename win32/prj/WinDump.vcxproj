@@ -261,6 +261,7 @@
     <ClCompile Include="..\..\print-msnlb.c" />
     <ClCompile Include="..\..\print-nflog.c" />
     <ClCompile Include="..\..\print-nfs.c" />
+    <ClCompile Include="..\..\print-nsh.c" />
     <ClCompile Include="..\..\print-ntp.c" />
     <ClCompile Include="..\..\print-null.c" />
     <ClCompile Include="..\..\print-olsr.c" />
@@ -312,6 +313,7 @@
     <ClCompile Include="..\..\print-vqp.c" />
     <ClCompile Include="..\..\print-vtp.c" />
     <ClCompile Include="..\..\print-vrrp.c" />
+    <ClCompile Include="..\..\print-vxlan-gpe.c" />
     <ClCompile Include="..\..\print-vxlan.c" />
     <ClCompile Include="..\..\print-wb.c" />
     <ClCompile Include="..\..\print-zephyr.c" />

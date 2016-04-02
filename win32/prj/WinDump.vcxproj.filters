@@ -515,6 +515,12 @@
     <ClCompile Include="..\src\getservent.c">
       <Filter>Missing</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\print-nsh.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\print-vxlan-gpe.c">
+      <Filter>Protocol Printers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\interface.h" />
